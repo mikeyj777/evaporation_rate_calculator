@@ -1,14 +1,14 @@
 // App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import HarmonicTessellations from './components/HarmonicTessellations';
+import EvaporationCalculator from './components/EvaporationCalculator';
 import './App.css';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/harmonic-tessellations" element={<HarmonicTessellations />} />
+        <Route path="/evap" element={<EvaporationCalculator />} />
       </Routes>
     </Router>
   );

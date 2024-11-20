@@ -25,8 +25,10 @@ const EvaporationCalculator = () => {
 
   useEffect(() => {
     if (chemicalInput.length > 0) {
+      const searchTerm = chemicalInput.toLowerCase();
       const filtered = chemicalData.filter(chem => 
-        chem.name.toLowerCase().includes(chemicalInput.toLowerCase())
+        chem.name.toLowerCase().includes(searchTerm) ||
+        (chem.casNumber && chem.casNumber.includes(searchTerm))
       );
       setFilteredChemicals(filtered);
     } else {
@@ -146,7 +148,7 @@ const EvaporationCalculator = () => {
         <label className="form-label">Hood Dimensions</label>
         <div className="dimension-inputs">
           <div>
-            <label className="form-label">Length (feet)</label>
+            <label className="form-label">Length (ft)</label>
             <input
               type="number"
               value={hoodLength}
@@ -156,7 +158,7 @@ const EvaporationCalculator = () => {
             />
           </div>
           <div>
-            <label className="form-label">Width (feet)</label>
+            <label className="form-label">Depth (ft)</label>
             <input
               type="number"
               value={hoodWidth}
@@ -170,7 +172,7 @@ const EvaporationCalculator = () => {
 
       <div className="form-group">
         <label className="form-label" htmlFor="hood-velocity">
-          Hood Face Velocity (m/s)
+          Hood Face Velocity (ft/s)
         </label>
         <input
           id="hood-velocity"
@@ -188,18 +190,18 @@ const EvaporationCalculator = () => {
           <input
             value={chemicalInput}
             onChange={(e) => setChemicalInput(e.target.value)}
-            placeholder="Search chemical by name"
+            placeholder="Search by Chemical Name or CAS Number"
             className="form-input"
           />
           {filteredChemicals.length > 0 && (
             <div className="dropdown">
               {filteredChemicals.map((chem) => (
                 <div
-                  key={chem.name}
+                  key={chem.casNumber || chem.name}
                   className="dropdown-item"
                   onClick={() => addComponent(chem)}
                 >
-                  {chem.name}
+                  {chem.name} | {chem.casNumber}
                 </div>
               ))}
             </div>
@@ -233,6 +235,7 @@ const EvaporationCalculator = () => {
             <thead>
               <tr>
                 <th className="table-header">Chemical</th>
+                <th className="table-header">CAS Number</th>
                 <th className="table-header">Original Input</th>
                 <th className="table-header">Mole Fraction (%)</th>
                 <th className="table-header">Actions</th>
@@ -243,6 +246,9 @@ const EvaporationCalculator = () => {
                 <tr key={component.name}>
                   <td className="table-cell">
                     {component.name}
+                  </td>
+                  <td className="table-cell">
+                    {component.casNumber}
                   </td>
                   <td className="table-cell">
                     {component.originalAmount.toFixed(2)} ({component.originalBasis})

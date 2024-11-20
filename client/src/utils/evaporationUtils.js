@@ -37,6 +37,7 @@ export const calculateSurfaceArea = (length, width) => {
 };
 
 export const calculateMassTransferCoefficient = (velocity, effectiveDiameter, schmidtNumber) => {
+  velocity /= 3.28084;
   return 0.0048 * Math.pow(velocity, 7/9) * Math.pow(effectiveDiameter, -1/9) * Math.pow(schmidtNumber, -2/3);
 };
 
