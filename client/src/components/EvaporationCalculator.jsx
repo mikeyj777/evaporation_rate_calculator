@@ -37,35 +37,6 @@ const EvaporationCalculator = () => {
     }
   }, [chemicalInput, chemicalData]);
 
-  const normalizeComponents = (components) => {
-    // Convert all components to moles first
-    const componentsInMoles = components.map(comp => {
-      if (comp.isMolar) {
-        return {
-          ...comp,
-          moles: comp.amount
-        };
-      } else {
-        return {
-          ...comp,
-          moles: comp.amount / comp.molecularWeight
-        };
-      }
-    });
-
-    // Calculate total moles
-    const totalMoles = componentsInMoles.reduce((sum, comp) => sum + comp.moles, 0);
-
-    // Convert to mole fractions and store original input
-    return componentsInMoles.map(comp => ({
-      ...comp,
-      originalAmount: comp.amount,
-      originalBasis: comp.isMolar ? 'molar' : 'mass',
-      amount: (comp.moles / totalMoles) * 100,
-      isMolar: true // Store everything in molar basis
-    }));
-  };
-
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       handleAddComponent();
@@ -95,36 +66,29 @@ const EvaporationCalculator = () => {
       return;
     }
 
-    const newComponents = [
+    setMixtureComponents([
       ...mixtureComponents,
       {
         ...selectedChemical,
         amount,
         isMolar: isMolarBasis
       }
-    ];
-
-    // Normalize all components
-    const normalizedComponents = normalizeComponents(newComponents);
-    setMixtureComponents(normalizedComponents);
+    ]);
 
     // Reset inputs
     setChemicalInput('');
     setComponentAmount('');
-    setIsMolarBasis(false);
-    setFilteredChemicals([]);
     setSelectedChemical(null);
+    setFilteredChemicals([]);
     setError('');
   };
 
-  const removeComponent = (chemicalName) => {
-    const remainingComponents = mixtureComponents.filter(comp => comp.name !== chemicalName);
-    if (remainingComponents.length > 0) {
-      const normalizedComponents = normalizeComponents(remainingComponents);
-      setMixtureComponents(normalizedComponents);
-    } else {
-      setMixtureComponents([]);
-    }
+  const removeComponent = (identifier) => {
+    const remainingComponents = mixtureComponents.filter(comp => 
+      (comp.casNumber && comp.casNumber === identifier) || 
+      (!comp.casNumber && comp.name === identifier)
+    );
+    setMixtureComponents(remainingComponents);
   };
 
   const calculateResults = () => {
@@ -204,6 +168,19 @@ const EvaporationCalculator = () => {
       </div>
 
       <div className="form-group">
+        <div className="basis-selection">
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={isMolarBasis}
+              onChange={(e) => setIsMolarBasis(e.target.checked)}
+              disabled={mixtureComponents.length > 0}
+              className="checkbox"
+            />
+            Molar Basis
+          </label>
+        </div>
+
         <label className="form-label">Add Mixture Component</label>
         <div className="component-input-row">
           <div className="chemical-input-container">
@@ -240,18 +217,6 @@ const EvaporationCalculator = () => {
             />
           </div>
 
-          <div className="molar-basis-container">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={isMolarBasis}
-                onChange={(e) => setIsMolarBasis(e.target.checked)}
-                className="checkbox"
-              />
-              Molar Basis
-            </label>
-          </div>
-
           <button
             className="add-button"
             onClick={handleAddComponent}
@@ -263,20 +228,19 @@ const EvaporationCalculator = () => {
 
       {mixtureComponents.length > 0 && (
         <div className="mixture-summary">
-          <h3>Mixture Components</h3>
+          <h3>Mixture Components {isMolarBasis ? '(Molar Basis)' : '(Mass Basis)'}</h3>
           <table className="mixture-table">
             <thead>
               <tr>
                 <th className="table-header">Chemical</th>
                 <th className="table-header">CAS Number</th>
-                <th className="table-header">Original Input</th>
-                <th className="table-header">Mole Fraction (%)</th>
+                <th className="table-header">Amount</th>
                 <th className="table-header">Actions</th>
               </tr>
             </thead>
             <tbody>
               {mixtureComponents.map((component) => (
-                <tr key={component.name}>
+                <tr key={component.casNumber || component.name}>
                   <td className="table-cell">
                     {component.name}
                   </td>
@@ -284,15 +248,12 @@ const EvaporationCalculator = () => {
                     {component.casNumber}
                   </td>
                   <td className="table-cell">
-                    {component.originalAmount.toFixed(2)} ({component.originalBasis})
-                  </td>
-                  <td className="table-cell">
                     {component.amount.toFixed(2)}
                   </td>
                   <td className="table-cell">
                     <button
                       className="remove-button"
-                      onClick={() => removeComponent(component.name)}
+                      onClick={() => removeComponent(component.casNumber || component.name)}
                     >
                       Remove
                     </button>
