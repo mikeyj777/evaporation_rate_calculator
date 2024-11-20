@@ -1,0 +1,26 @@
+src/
+├── components/
+│   └── EvaporationCalculator.jsx
+│
+├── styles/
+│   └── EvaporationCalculator.css
+│
+├── utils/
+│   └── evaporationUtils.js
+│
+├── public/
+│   └── data/
+│       └── cheminfo.csv
+│
+├── types/
+│   └── chemical.d.ts      # Type definitions if using TypeScript
+│
+├── constants/
+│   └── physicalConstants.js  # Physical constants used in calculations
+│
+└── services/
+    └── csvLoader.js       # CSV file loading and parsing logic
+
+.env                       # Environment variables if needed
+package.json
+README.md
