@@ -121,11 +121,12 @@ export const loadChemicalData = async () => {
       const values = line.split(',');
       return {
         name: values[0],
-        molecularWeight: parseFloat(values[4]),
+        casNumber: values[1],
+        molecularWeight: parseFloat(values[5]),
         vaporPressureConstants: {
-          A: parseFloat(values[5]),
-          B: parseFloat(values[6]),
-          C: parseFloat(values[7])
+          A: parseFloat(values[6]),
+          B: parseFloat(values[7]),
+          C: parseFloat(values[8])
         }
       };
     });

@@ -9,12 +9,13 @@ import '../styles/EvaporationCalculator.css';
 const EvaporationCalculator = () => {
   const [hoodVelocity, setHoodVelocity] = useState('');
   const [hoodLength, setHoodLength] = useState('');
-  const [hoodWidth, setHoodWidth] = useState('');
+  const [hoodDepth, setHoodDepth] = useState('');
   const [chemicalInput, setChemicalInput] = useState('');
   const [componentAmount, setComponentAmount] = useState('');
   const [isMolarBasis, setIsMolarBasis] = useState(false);
   const [mixtureComponents, setMixtureComponents] = useState([]);
   const [filteredChemicals, setFilteredChemicals] = useState([]);
+  const [selectedChemical, setSelectedChemical] = useState(null);
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
   const [chemicalData, setChemicalData] = useState([]);
@@ -65,7 +66,24 @@ const EvaporationCalculator = () => {
     }));
   };
 
-  const addComponent = (chemical) => {
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleAddComponent();
+    }
+  };
+
+  const handleChemicalSelect = (chemical) => {
+    setSelectedChemical(chemical);
+    setChemicalInput(`${chemical.name} | ${chemical.casNumber}`);
+    setFilteredChemicals([]);
+  };
+
+  const handleAddComponent = () => {
+    if (!selectedChemical) {
+      setError('Please select a valid chemical from the dropdown');
+      return;
+    }
+
     if (!componentAmount) {
       setError('Please enter component amount');
       return;
@@ -80,7 +98,7 @@ const EvaporationCalculator = () => {
     const newComponents = [
       ...mixtureComponents,
       {
-        ...chemical,
+        ...selectedChemical,
         amount,
         isMolar: isMolarBasis
       }
@@ -95,6 +113,7 @@ const EvaporationCalculator = () => {
     setComponentAmount('');
     setIsMolarBasis(false);
     setFilteredChemicals([]);
+    setSelectedChemical(null);
     setError('');
   };
 
@@ -109,7 +128,7 @@ const EvaporationCalculator = () => {
   };
 
   const calculateResults = () => {
-    if (!hoodVelocity || !hoodLength || !hoodWidth) {
+    if (!hoodVelocity || !hoodLength || !hoodDepth) {
       setError('Please provide all hood dimensions and face velocity');
       return;
     }
@@ -124,7 +143,7 @@ const EvaporationCalculator = () => {
         mixtureComponents,
         parseFloat(hoodVelocity),
         parseFloat(hoodLength),
-        parseFloat(hoodWidth)
+        parseFloat(hoodDepth)
       );
 
       setResults({
@@ -161,9 +180,9 @@ const EvaporationCalculator = () => {
             <label className="form-label">Depth (ft)</label>
             <input
               type="number"
-              value={hoodWidth}
-              onChange={(e) => setHoodWidth(e.target.value)}
-              placeholder="Enter width"
+              value={hoodDepth}
+              onChange={(e) => setHoodDepth(e.target.value)}
+              placeholder="Enter depth"
               className="form-input"
             />
           </div>
@@ -186,45 +205,59 @@ const EvaporationCalculator = () => {
 
       <div className="form-group">
         <label className="form-label">Add Mixture Component</label>
-        <div style={{ position: 'relative' }}>
-          <input
-            value={chemicalInput}
-            onChange={(e) => setChemicalInput(e.target.value)}
-            placeholder="Search by Chemical Name or CAS Number"
-            className="form-input"
-          />
-          {filteredChemicals.length > 0 && (
-            <div className="dropdown">
-              {filteredChemicals.map((chem) => (
-                <div
-                  key={chem.casNumber || chem.name}
-                  className="dropdown-item"
-                  onClick={() => addComponent(chem)}
-                >
-                  {chem.name} | {chem.casNumber}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="component-input">
-          <input
-            type="number"
-            value={componentAmount}
-            onChange={(e) => setComponentAmount(e.target.value)}
-            placeholder="Enter amount"
-            className="amount-input"
-          />
-          <label className="checkbox-label">
+        <div className="component-input-row">
+          <div className="chemical-input-container">
             <input
-              type="checkbox"
-              checked={isMolarBasis}
-              onChange={(e) => setIsMolarBasis(e.target.checked)}
-              className="checkbox"
+              value={chemicalInput}
+              onChange={(e) => setChemicalInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Search by Chemical Name or CAS Number"
+              className="form-input"
             />
-            Molar Basis
-          </label>
+            {filteredChemicals.length > 0 && (
+              <div className="dropdown">
+                {filteredChemicals.map((chem) => (
+                  <div
+                    key={chem.casNumber || chem.name}
+                    className="dropdown-item"
+                    onClick={() => handleChemicalSelect(chem)}
+                  >
+                    {chem.name} | {chem.casNumber}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="amount-input-container">
+            <input
+              type="number"
+              value={componentAmount}
+              onChange={(e) => setComponentAmount(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Amount"
+              className="form-input"
+            />
+          </div>
+
+          <div className="molar-basis-container">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={isMolarBasis}
+                onChange={(e) => setIsMolarBasis(e.target.checked)}
+                className="checkbox"
+              />
+              Molar Basis
+            </label>
+          </div>
+
+          <button
+            className="add-button"
+            onClick={handleAddComponent}
+          >
+            Add Chemical
+          </button>
         </div>
       </div>
 
@@ -280,7 +313,7 @@ const EvaporationCalculator = () => {
       <button
         className="calculate-button"
         onClick={calculateResults}
-        disabled={!hoodVelocity || !hoodLength || !hoodWidth || mixtureComponents.length === 0}
+        disabled={!hoodVelocity || !hoodLength || !hoodDepth || mixtureComponents.length === 0}
       >
         Calculate Evaporation Rate
       </button>
