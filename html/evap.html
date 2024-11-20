@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Hood Evaporation Calculator</title>
+    <link rel="stylesheet" href="styles/EvaporationCalculator.css">
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="calculator-header">
+            <h1 class="calculator-title">Lab Hood Evaporation Calculator</h1>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Hood Dimensions</label>
+            <div class="dimension-inputs">
+                <div>
+                    <label class="form-label">Length (feet)</label>
+                    <input
+                        type="number"
+                        id="hood-length"
+                        placeholder="Enter length"
+                        class="form-input"
+                    />
+                </div>
+                <div>
+                    <label class="form-label">Depth (feet)</label>
+                    <input
+                        type="number"
+                        id="hood-depth"
+                        placeholder="Enter depth"
+                        class="form-input"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="hood-velocity">
+                Hood Face Velocity (ft/sec)
+            </label>
+            <input
+                id="hood-velocity"
+                type="number"
+                placeholder="Enter hood face velocity"
+                class="form-input"
+            />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Add Mixture Component</label>
+            <div style="position: relative;">
+                <input
+                    id="chemical-search"
+                    placeholder="Search by Chemical Name or CAS Number"
+                    class="form-input"
+                />
+                <div id="chemical-dropdown" class="dropdown" style="display: none;"></div>
+            </div>
+
+            <div class="component-input">
+                <input
+                    type="number"
+                    id="component-amount"
+                    placeholder="Enter amount"
+                    class="amount-input"
+                />
+                <label class="checkbox-label">
+                    <input
+                        type="checkbox"
+                        id="molar-basis"
+                        class="checkbox"
+                    />
+                    Molar Basis
+                </label>
+                <button id="add-component-button" class="add-button" disabled>
+                    Add to Mixture
+                </button>
+            </div>
+        </div>
+
+        <div id="mixture-summary" class="mixture-summary" style="display: none;">
+            <h3>Mixture Components</h3>
+            <table class="mixture-table">
+                <thead>
+                    <tr>
+                        <th class="table-header">Chemical</th>
+                        <th class="table-header">CAS Number</th>
+                        <th class="table-header">Original Input</th>
+                        <th class="table-header">Mole Fraction (%)</th>
+                        <th class="table-header">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="mixture-table-body"></tbody>
+            </table>
+        </div>
+
+        <div id="error-message" class="error-message" style="display: none;"></div>
+
+        <button
+            id="calculate-button"
+            class="calculate-button"
+            disabled
+        >
+            Calculate Evaporation Rate
+        </button>
+
+        <div id="results" class="results-container" style="display: none;">
+            <h3>Results:</h3>
+            <p id="evaporation-rate">Evaporation Rate: -- kg/sec</p>
+            <p id="ten-second-result">Amount evaporated in 10 seconds: -- g</p>
+            <p id="sixty-second-result">Amount evaporated in 60 seconds: -- g</p>
+        </div>
+    </div>
+
+    <script src="js/evaporationUtils.js" type="module"></script>
+    <script src="js/calculator.js" type="module"></script>
+</body>
+</html>
