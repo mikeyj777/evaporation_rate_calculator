@@ -107,31 +107,102 @@ export const calculateEvaporationRate = (components, hoodVelocity, hoodLength, h
   return evaporationRate;
 };
 
+  // Utility function to parse CSV data properly handling quoted fields
+const parseCsvData = (text) => {
+  const rows = [];
+  let currentRow = [];
+  let currentField = '';
+  let insideQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+
+      if (char === '"') {
+          if (insideQuotes && text[i + 1] === '"') {
+              // Handle escaped quotes ("") within quoted fields
+              currentField += '"';
+              i++;
+          } else {
+              // Toggle quote state
+              insideQuotes = !insideQuotes;
+          }
+      } else if (char === ',' && !insideQuotes) {
+          // End of field
+          currentRow.push(currentField.trim());
+          currentField = '';
+      } else if (char === '\n' && !insideQuotes) {
+          // End of row
+          currentRow.push(currentField.trim());
+          if (currentRow.some(field => field)) {
+              // Skip empty rows
+              rows.push([...currentRow]);
+          }
+          currentRow = [];
+          currentField = '';
+      } else {
+          currentField += char;
+      }
+  }
+
+  // Handle last row if file doesn't end with newline
+  if (currentField || currentRow.length > 0) {
+      currentRow.push(currentField.trim());
+      if (currentRow.some(field => field)) {
+          rows.push(currentRow);
+      }
+  }
+
+  const header = rows[0];
+  const data = rows.slice(1, rows.length);
+
+
+  return {header, data};
+};
+
 // Utility function to read CSV data
 export const loadChemicalData = async () => {
   try {
-    const response = await fetch('/data/cheminfo.csv');
-    const text = await response.text();
-    
-    // Parse CSV
-    const lines = text.split('\n');
-    const headers = lines[0].split(',');
-    
-    return lines.slice(1).map(line => {
-      const values = line.split(',');
-      return {
-        name: values[0],
-        casNumber: values[1],
-        molecularWeight: parseFloat(values[5]),
-        vaporPressureConstants: {
-          A: parseFloat(values[6]),
-          B: parseFloat(values[7]),
-          C: parseFloat(values[8])
-        }
-      };
-    });
+      const response = await fetch('/data/cheminfo.csv');
+      const text = await response.text();
+
+      // Parse CSV properly handling commas in fields
+      const rows = text.split('\n').map(row => {
+          const cells = [];
+          let currentCell = '';
+          let inQuotes = false;
+
+          for (let i = 0; i < row.length; i++) {
+              const char = row[i];
+              if (char === '"') {
+                  inQuotes = !inQuotes;
+              } else if (char === ',' && !inQuotes) {
+                  cells.push(currentCell.trim().replace(/^"|"$/g, ''));
+                  currentCell = '';
+              } else {
+                  currentCell += char;
+              }
+          }
+
+          // Push the last cell
+          cells.push(currentCell.trim().replace(/^"|"$/g, ''));
+          return cells;
+      });
+
+      const headers = rows[0];
+      return rows.slice(1).map(values => ({
+          name: values[0],
+          casNumber: values[1],
+          molecularWeight: parseFloat(values[4]),
+          vaporPressureConstants: {
+              A: parseFloat(values[5]),
+              B: parseFloat(values[6]),
+              C: parseFloat(values[7]),
+              D: parseFloat(values[8]),
+              E: parseFloat(values[9]),
+          },
+      })).filter(chem => chem.name); // Filter out any empty rows
   } catch (error) {
-    console.error('Error loading chemical data:', error);
-    return [];
+      console.error('Error loading chemical data:', error);
+      return [];
   }
 };
