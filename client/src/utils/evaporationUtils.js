@@ -69,7 +69,8 @@ export const calculateEvaporationRate = (components, hoodVelocity, hoodLength, h
   
   // For mixtures, we need to:
   // 1. Calculate mixture molecular weight
-  mixtureMW = getAverageMolecularWeight(mixtureComponents);
+  const mixtureMW = getAverageMolecularWeight(components);
+  console.log("ave mw: ", mixtureMW);
   
   // 2. Calculate mixture vapor pressure (Raoult's law)
   const mixtureVaporPressure = components.reduce((totalPressure, comp) => {
@@ -84,6 +85,8 @@ export const calculateEvaporationRate = (components, hoodVelocity, hoodLength, h
     
     return totalPressure + (comp.amount * pureCompVaporPressure);
   }, 0);
+
+  console.log("mixture vp: ", mixtureVaporPressure);
   
   // Calculate diffusivity and Schmidt number
   const diffusivity = calculateDiffusivity(mixtureMW);

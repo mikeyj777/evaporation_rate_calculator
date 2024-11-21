@@ -104,10 +104,12 @@ const EvaporationCalculator = () => {
     }
 
     try {
-      if (!isMolarBasis) setMixtureComponents(convertToMolarBasis(mixtureComponents));
+      if (!isMolarBasis) {
+        setMixtureComponents(convertToMolarBasis(mixtureComponents));
+        console.log("Mixture after converting to molar basis: ", mixtureComponents);
+      }
     } catch (err) {
       setError('Error converting mass to molar: ' + err.message);
-      console.log("Mixture after converting to molar basis: ", mixtureComponents);
       return;
     }
     
