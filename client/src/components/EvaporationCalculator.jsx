@@ -3,11 +3,11 @@ import {
   loadChemicalData, 
   calculateEvaporationRate,
   convertToMolarBasis,
-  getAverageMolecularWeight
 } from '../utils/evaporationUtils';
 import '../styles/EvaporationCalculator.css';
 
 const EvaporationCalculator = () => {
+  // Display state
   const [hoodVelocity, setHoodVelocity] = useState('');
   const [hoodLength, setHoodLength] = useState('');
   const [hoodDepth, setHoodDepth] = useState('');
@@ -15,6 +15,11 @@ const EvaporationCalculator = () => {
   const [componentAmount, setComponentAmount] = useState('');
   const [isMolarBasis, setIsMolarBasis] = useState(false);
   const [mixtureComponents, setMixtureComponents] = useState([]);
+  
+  // Calculation state
+  const [calculationComponents, setCalculationComponents] = useState([]);
+  
+  // Supporting state
   const [filteredChemicals, setFilteredChemicals] = useState([]);
   const [selectedChemical, setSelectedChemical] = useState(null);
   const [results, setResults] = useState(null);
@@ -37,6 +42,10 @@ const EvaporationCalculator = () => {
       setFilteredChemicals([]);
     }
   }, [chemicalInput, chemicalData]);
+
+  useEffect(() => {
+    if (mixtureComponents.length == 0) setResults(null);
+  }, [mixtureComponents])
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
@@ -67,14 +76,20 @@ const EvaporationCalculator = () => {
       return;
     }
 
-    setMixtureComponents([
-      ...mixtureComponents,
-      {
-        ...selectedChemical,
-        amount,
-        isMolar: isMolarBasis
-      }
-    ]);
+    const newComponent = {
+      ...selectedChemical,
+      amount,
+      originalAmount: amount,
+      isMolar: isMolarBasis
+    };
+
+    setMixtureComponents(prev => [...prev, newComponent]);
+    
+    // Update calculation components
+    const calcComponent = isMolarBasis ? 
+      newComponent : 
+      { ...newComponent, amount: convertToMolarBasis([newComponent])[0].amount };
+    setCalculationComponents(prev => [...prev, calcComponent]);
 
     // Reset inputs
     setChemicalInput('');
@@ -85,11 +100,12 @@ const EvaporationCalculator = () => {
   };
 
   const removeComponent = (identifier) => {
-    const remainingComponents = mixtureComponents.filter(comp => 
-      (comp.casNumber && comp.casNumber === identifier) || 
-      (!comp.casNumber && comp.name === identifier)
+    setMixtureComponents(prev => 
+      prev.filter(comp => (comp.casNumber || comp.name) !== identifier)
     );
-    setMixtureComponents(remainingComponents);
+    setCalculationComponents(prev =>
+      prev.filter(comp => (comp.casNumber || comp.name) !== identifier)
+    );
   };
 
   const calculateResults = () => {
@@ -98,35 +114,24 @@ const EvaporationCalculator = () => {
       return;
     }
 
-    if (mixtureComponents.length === 0) {
+    if (calculationComponents.length === 0) {
       setError('Please add at least one component to the mixture');
       return;
     }
 
     try {
-      if (!isMolarBasis) {
-        setMixtureComponents(convertToMolarBasis(mixtureComponents));
-        console.log("Mixture after converting to molar basis: ", mixtureComponents);
-      }
-    } catch (err) {
-      setError('Error converting mass to molar: ' + err.message);
-      return;
-    }
-    
-
-    try {
-      console.log("in calculateResults.  Mixture components: ", mixtureComponents, " | hoodVelocity: ", hoodVelocity, " | hoodLength: ", hoodLength, " | hoodDepth: ", hoodDepth);
       const evaporationRate = calculateEvaporationRate(
-        mixtureComponents,
+        calculationComponents,
         parseFloat(hoodVelocity),
         parseFloat(hoodLength),
-        parseFloat(hoodDepth),
+        parseFloat(hoodDepth)
       );
 
       setResults({
         ratePerSecond: evaporationRate,
-        tenSeconds: evaporationRate * 10 * 1000, // Convert to grams
-        sixtySeconds: evaporationRate * 60 * 1000 // Convert to grams
+        tenSeconds: evaporationRate * 10 * 1000,
+        sixtySeconds: evaporationRate * 60 * 1000,
+        oneHour: evaporationRate * 3600 * 1000,
       });
       setError('');
     } catch (err) {
@@ -261,7 +266,7 @@ const EvaporationCalculator = () => {
                     {component.casNumber}
                   </td>
                   <td className="table-cell">
-                    {component.amount.toFixed(2)}
+                    {component.originalAmount.toFixed(2)}
                   </td>
                   <td className="table-cell">
                     <button
@@ -298,6 +303,7 @@ const EvaporationCalculator = () => {
           <p>Evaporation Rate: {results.ratePerSecond.toFixed(6)} kg/sec</p>
           <p>Amount evaporated in 10 seconds: {results.tenSeconds.toFixed(2)} g</p>
           <p>Amount evaporated in 60 seconds: {results.sixtySeconds.toFixed(2)} g</p>
+          <p>Amount evaporated in 1 hour: {results.oneHour.toFixed(2)} g</p>
         </div>
       )}
     </div>
