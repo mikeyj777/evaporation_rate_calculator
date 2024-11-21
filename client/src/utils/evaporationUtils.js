@@ -1,3 +1,5 @@
+//evaporationUtils.js
+
 // Constants
 const DIFFUSIVITY_WATER = 2.4e-5; // m2/s
 const MW_WATER = 18.015; // g/mol
@@ -60,43 +62,64 @@ export const calculateMassTransferCoefficient = (velocity, effectiveDiameter, sc
   return 0.0048 * Math.pow(velocity, 7/9) * Math.pow(effectiveDiameter, -1/9) * Math.pow(schmidtNumber, -2/3);
 };
 
-export const calculateEvaporationRate = (components, hoodVelocity, hoodLength, hoodWidth) => {
+export const calculateEvaporationRate = (components, hoodVelocity, hoodLength, hoodWidth, mwManual, vpManual) => {
   // Calculate surface area
   const area = calculateSurfaceArea(hoodLength, hoodWidth);
+  console.log("area (A):", area, " m2");
   
   // Calculate effective diameter
   const effectiveDiameter = calculateEffectiveDiameter(area);
+
+  console.log("effective diameter (Z): ", effectiveDiameter, " m");
   
   // For mixtures, we need to:
   // 1. Calculate mixture molecular weight
-  const mixtureMW = getAverageMolecularWeight(components);
-  console.log("ave mw: ", mixtureMW);
+  let mixtureMW = mwManual;
+  if (!mixtureMW) mixtureMW = getAverageMolecularWeight(components);
+  console.log("average molecular wt: ", mixtureMW);
   
+  
+  let mixtureVaporPressure = vpManual;
   // 2. Calculate mixture vapor pressure (Raoult's law)
-  const mixtureVaporPressure = components.reduce((totalPressure, comp) => {
-    const pureCompVaporPressure = calculateVaporPressure(
-      comp.vaporPressureConstants.A,
-      comp.vaporPressureConstants.B,
-      comp.vaporPressureConstants.C,
-      comp.vaporPressureConstants.D,
-      comp.vaporPressureConstants.E,
-      TEMP_K
-    );
-    
-    return totalPressure + (comp.amount * pureCompVaporPressure);
-  }, 0);
+  if (!mixtureVaporPressure) {
+    mixtureVaporPressure = components.reduce((totalPressure, comp) => {
+      const pureCompVaporPressure = calculateVaporPressure(
+        comp.vaporPressureConstants.A,
+        comp.vaporPressureConstants.B,
+        comp.vaporPressureConstants.C,
+        comp.vaporPressureConstants.D,
+        comp.vaporPressureConstants.E,
+        TEMP_K
+      );
+      console.log("component: ", comp.name, " | pure component vapor pressure: ", pureCompVaporPressure, " Pa");
+      return totalPressure + (comp.amount * pureCompVaporPressure);
+    }, 0);
+  }
 
-  console.log("mixture vp: ", mixtureVaporPressure);
+  console.log("overall vapor pressure: ", mixtureVaporPressure, " Pa");
   
   // Calculate diffusivity and Schmidt number
   const diffusivity = calculateDiffusivity(mixtureMW);
+  console.log("diffusivity H2O: ", DIFFUSIVITY_WATER, " m2/s")
+  console.log("diffusivity of our mixture  = diffusivityH2O * sqrt(mwH2O / aveMW): ");
+  console.log("diffusivity of our mixture: ", diffusivity, " m2/s");
+
   const schmidtNumber = calculateSchmidtNumber(diffusivity);
-  
+
+  console.log("kin. viscosity of air: ", KINEMATIC_VISCOSITY_AIR, " m2/s")
+  console.log("Schmidt Number = (kin. viscosity of air / diffusivity of mixture): ", schmidtNumber);
+
   // Calculate mass transfer coefficient
   const Km = calculateMassTransferCoefficient(hoodVelocity, effectiveDiameter, schmidtNumber);
+  console.log("Km (mass transfer coefficient) = 0.0048 * (face velocity)^(7/9) * (diameter)^(-1/9) * (schmidt)^(-2/3)");
+  console.log("Km = ", Km)
   
   // Calculate final evaporation rate in kg/s
   const evaporationRate = area * Km * (mixtureMW * mixtureVaporPressure / R / TEMP_K);
+  console.log("Evaporation Rate = area * Km * (mixtureMW * mixtureVaporPressure / R / TEMP_K)");
+  console.log("R: 8314 J/kmol/deg K")
+  console.log("Temp assumes ambient, 25 deg C, 298.15 deg K");
+  console.log("evaporation rate: ", evaporationRate, " kg/s");
   
   return evaporationRate;
 };
@@ -132,8 +155,8 @@ export const loadChemicalData = async () => {
 
       const headers = rows[0];
       return rows.slice(1).map(values => ({
-          name: values[0],
-          casNumber: values[1],
+        casNumber: values[0],  
+        name: values[1],
           molecularWeight: parseFloat(values[4]),
           vaporPressureConstants: {
               A: parseFloat(values[5]),
