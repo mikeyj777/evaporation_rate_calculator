@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   loadChemicalData, 
   calculateEvaporationRate,
-  calculateVaporPressure 
+  convertToMolarBasis,
+  getAverageMolecularWeight
 } from '../utils/evaporationUtils';
 import '../styles/EvaporationCalculator.css';
 
@@ -103,11 +104,21 @@ const EvaporationCalculator = () => {
     }
 
     try {
+      if (!isMolarBasis) setMixtureComponents(convertToMolarBasis(mixtureComponents));
+    } catch (err) {
+      setError('Error converting mass to molar: ' + err.message);
+      console.log("Mixture after converting to molar basis: ", mixtureComponents);
+      return;
+    }
+    
+
+    try {
+      console.log("in calculateResults.  Mixture components: ", mixtureComponents, " | hoodVelocity: ", hoodVelocity, " | hoodLength: ", hoodLength, " | hoodDepth: ", hoodDepth);
       const evaporationRate = calculateEvaporationRate(
         mixtureComponents,
         parseFloat(hoodVelocity),
         parseFloat(hoodLength),
-        parseFloat(hoodDepth)
+        parseFloat(hoodDepth),
       );
 
       setResults({
@@ -187,7 +198,7 @@ const EvaporationCalculator = () => {
             <input
               value={chemicalInput}
               onChange={(e) => setChemicalInput(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
               placeholder="Search by Chemical Name or CAS Number"
               className="form-input"
             />
@@ -211,7 +222,7 @@ const EvaporationCalculator = () => {
               type="number"
               value={componentAmount}
               onChange={(e) => setComponentAmount(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
               placeholder="Amount"
               className="form-input"
             />
