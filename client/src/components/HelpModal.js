@@ -3,26 +3,25 @@
 import React, { useEffect } from 'react';
 import '../styles/HelpModal.css';
 
-const HelpModal = ({ isOpen, onClose }) => {
+const HelpModal = () => {
   useEffect(() => {
     const handleEsc = (event) => {
-      if (event.key === 'Escape') onClose();
+      if (event.key === 'Escape') {
+        const modalElement = document.querySelector('.modal.show');
+        if (modalElement) {
+          const event = new Event('click');
+          modalElement.dispatchEvent(event);
+        }
+      }
     };
     
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
-  }, [onClose]);
-
-  if (!isOpen) return null;
-
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) onClose();
-  };
+  }, []);
 
   return (
-    <div onClick={handleBackdropClick}>
+    <div>
       <div className="modal-content">
-        <button className="close" onClick={onClose}>&times;</button>
         
         <h2>Evaporation Calculator Help</h2>
         
@@ -61,10 +60,11 @@ const HelpModal = ({ isOpen, onClose }) => {
               <li>For mixtures:
                 <ul>
                   <li>Select molar or mass basis before adding components</li>
-                  <li>Must remove all components to change basis selection</li>
+                  <li>Must remove all components to change molar/mass basis selection</li>
                   <li>Enter relative amounts (ratios or fractions)</li>
                   <li>Avoid using %, $, or commas (periods for decimals are OK)</li>
-                  <li>Values will be automatically normalized</li>
+                  <li>Values do not need to sum to 1 or 100</li>
+                  <li>Values will be normalized when submitted</li>
                 </ul>
               </li>
             </ul>

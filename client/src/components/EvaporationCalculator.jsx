@@ -178,19 +178,17 @@ const EvaporationCalculator = () => {
       </button>
 
       {showHelp && (
-        <div className="modal show">
+        <div className="modal show" onClick={(e) => {
+          if (e.target.className === 'modal show') {
+            setShowHelp(false);
+          }
+        }}>
           <div className="modal-content">
-            <button 
-              className="close"
-              onClick={() => setShowHelp(false)}
-            >
-              ×
-            </button>
+            <button className="close" onClick={() => setShowHelp(false)}>×</button>
             <HelpModal />
           </div>
         </div>
       )}
-
 
       <div className="form-group">
         <label className="form-label">Hood Dimensions</label>
@@ -396,6 +394,11 @@ const EvaporationCalculator = () => {
           <p>Amount evaporated in 1 hour: {results.oneHour.toFixed(2)} g</p>
         </div>
       )}
+
+      <section>
+          <h3>Contact</h3>
+          <p>For questions or support, please contact Mike James (mjames@eastman.com)</p>
+        </section>
     </div>
   );
 };
