@@ -7,6 +7,7 @@ import {
   convertToMolarBasis,
 } from '../utils/evaporationUtils';
 import '../styles/EvaporationCalculator.css';
+import HelpModal from './HelpModal';
 
 const EvaporationCalculator = () => {
   // Display state
@@ -32,6 +33,9 @@ const EvaporationCalculator = () => {
   const [manualEntry, setManualEntry] = useState(false);
   const [molecularWeightManual, setMolecularWeightManual] = useState('');
   const [vaporPressureManual, setVaporPressureManual] = useState('');
+
+  //Help Modal
+  const [showHelp, setShowHelp] = useState(false);
 
 
   useEffect(() => {
@@ -165,6 +169,28 @@ const EvaporationCalculator = () => {
       <div className="calculator-header">
         <h1 className="calculator-title">Lab Hood Evaporation Calculator</h1>
       </div>
+
+      <button 
+        onClick={() => setShowHelp(true)}
+        className="help-button"
+      >
+        ?
+      </button>
+
+      {showHelp && (
+        <div className="modal show">
+          <div className="modal-content">
+            <button 
+              className="close"
+              onClick={() => setShowHelp(false)}
+            >
+              ×
+            </button>
+            <HelpModal />
+          </div>
+        </div>
+      )}
+
 
       <div className="form-group">
         <label className="form-label">Hood Dimensions</label>

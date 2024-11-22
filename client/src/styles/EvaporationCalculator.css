@@ -168,3 +168,23 @@
   align-items: center;
   gap: calc(var(--spacing-unit) * 0.25);
 }
+
+.help-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.help-button:hover {
+  background: #e0e0e0;
+}
