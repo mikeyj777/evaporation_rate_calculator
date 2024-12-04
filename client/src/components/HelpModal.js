@@ -51,6 +51,7 @@ const HelpModal = () => {
             <ul>
               <li>Enter all components that could be spilled</li>
               <li>Search by chemical name or CAS Number</li>
+              <li>The list of available chemicals will automatically filter while typing</li>
               <li>For pure components:
                 <ul>
                   <li>Enter single component</li>

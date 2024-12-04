@@ -188,3 +188,7 @@
 .help-button:hover {
   background: #e0e0e0;
 }
+
+.basis-selection {
+  margin-bottom: calc(var(--spacing-unit) * 1.5);
+}

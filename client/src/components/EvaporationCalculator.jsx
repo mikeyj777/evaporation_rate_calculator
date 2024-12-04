@@ -1,10 +1,47 @@
 //EvaporationCalculator.jsx
 
+/**
+ * EvaporationCalculator Component
+ * 
+ * This component provides a user interface for calculating the evaporation rate of chemicals in a lab hood environment.
+ * Users can input hood dimensions, face velocity, and chemical components to compute the evaporation rate.
+ * 
+ * State Variables:
+ * - hoodVelocity: string - The face velocity of the lab hood in feet per minute.
+ * - hoodLength: string - The length of the lab hood in feet.
+ * - hoodDepth: string - The depth of the lab hood in feet.
+ * - chemicalInput: string - The input for searching chemicals by name or CAS number.
+ * - componentAmount: string - The amount of the selected chemical component.
+ * - isMolarBasis: boolean - Flag indicating if the input amounts are on a molar basis.
+ * - mixtureComponents: array - List of chemical components added to the mixture.
+ * - calculationComponents: array - List of chemical components used for calculations.
+ * - filteredChemicals: array - List of chemicals filtered based on the search input.
+ * - selectedChemical: object - The currently selected chemical from the search results.
+ * - results: object - The calculated evaporation results.
+ * - error: string - Error message for input validation and calculation errors.
+ * - chemicalData: array - List of chemical data loaded from an external source.
+ * - manualEntry: boolean - Flag indicating if manual input of molecular weight and vapor pressure is enabled.
+ * - molecularWeightManual: string - Manually entered molecular weight of the chemical.
+ * - vaporPressureManual: string - Manually entered vapor pressure of the chemical at 25°C.
+ * - showHelp: boolean - Flag indicating if the help modal is displayed.
+ * 
+ * Handlers and Functions:
+ * - useEffect: Loads chemical data on component mount and handles input changes.
+ * - handleKeyPress: Adds a component to the mixture when the Enter key is pressed.
+ * - handleChemicalSelect: Selects a chemical from the search results.
+ * - handleAddComponent: Adds the selected chemical component to the mixture.
+ * - removeComponent: Removes a chemical component from the mixture.
+ * - calculateResults: Calculates the evaporation rate based on the input parameters.
+ * 
+ * returns JSX.Element The rendered EvaporationCalculator component.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { 
   loadChemicalData, 
   calculateEvaporationRate,
   convertToMolarBasis,
+  calculateConcentrationPpm
 } from '../utils/evaporationUtils';
 import '../styles/EvaporationCalculator.css';
 import HelpModal from './HelpModal';
@@ -18,6 +55,10 @@ const EvaporationCalculator = () => {
   const [componentAmount, setComponentAmount] = useState('');
   const [isMolarBasis, setIsMolarBasis] = useState(false);
   const [mixtureComponents, setMixtureComponents] = useState([]);
+  const [sashHeight, setSashHeight] = useState('');
+  const [sashWidth, setSashWidth] = useState('');
+  const [evapRateGramSec, setEvapRateGramSec] = useState(null);
+  const [concPpm, setConcPpm] = useState(null);
   
   // Calculation state
   const [calculationComponents, setCalculationComponents] = useState([]);
@@ -61,13 +102,17 @@ const EvaporationCalculator = () => {
   }, [chemicalInput, chemicalData]);
 
   useEffect(() => {
-    if (mixtureComponents.length == 0) setResults(null);
+    setResults(null);
+    setConcPpm(null);
   }, [mixtureComponents])
 
   useEffect( () => {
     setMixtureComponents([]);
+    setCalculationComponents([]);
     setMolecularWeightManual('');
     setVaporPressureManual('');
+    setResults(null);
+    setConcPpm(null);
   }, [manualEntry])
 
   const handleKeyPress = (e) => {
@@ -131,6 +176,29 @@ const EvaporationCalculator = () => {
     );
   };
 
+  const calcConc = () => {
+    if (!evapRateGramSec || !sashHeight || !sashWidth) {
+      setError('Please provide sash dimensions and complete evaporation rate calc.')
+      return;
+    }
+    try {
+      const concPpmResult = calculateConcentrationPpm(
+        parseFloat(sashHeight), 
+        parseFloat(sashWidth),
+        parseFloat(hoodVelocity), 
+        evapRateGramSec, 
+        calculationComponents, 
+        parseFloat(molecularWeightManual)
+      )
+
+      setConcPpm(concPpmResult);
+      setError('');
+    } catch (err) {
+      setError('Error calculating concentration:' + err.message);
+    }
+
+  }
+
   const calculateResults = () => {
     if (!hoodVelocity || !hoodLength || !hoodDepth) {
       setError('Please provide all hood dimensions and face velocity');
@@ -154,11 +222,12 @@ const EvaporationCalculator = () => {
 
       setResults({
         ratePerSecond: evaporationRate,
-        tenSeconds: evaporationRate * 10 * 1000,
-        sixtySeconds: evaporationRate * 60 * 1000,
-        oneHour: evaporationRate * 3600 * 1000,
+        tenSeconds: evaporationRate * 10,
+        sixtySeconds: evaporationRate * 60,
+        oneHour: evaporationRate * 3600,
       });
       setError('');
+      setEvapRateGramSec(evaporationRate);
     } catch (err) {
       setError('Error calculating evaporation rate: ' + err.message);
     }
@@ -218,7 +287,7 @@ const EvaporationCalculator = () => {
 
       <div className="form-group">
         <label className="form-label" htmlFor="hood-velocity">
-          Hood Face Velocity (ft/s)
+          Hood Face Velocity (ft/min)
         </label>
         <input
           id="hood-velocity"
@@ -232,6 +301,9 @@ const EvaporationCalculator = () => {
       {!manualEntry && (<div>
         <div className="form-group">
           <div className="basis-selection">
+            <section>
+              <p><strong>NOTE:  </strong>Checking the "Molar Basis" box will specify component amounts in terms of Moles.  When unchecked, component amounts are in terms of Mass.</p>
+            </section>
             <label className="checkbox-label">
               <input
                 type="checkbox"
@@ -275,7 +347,7 @@ const EvaporationCalculator = () => {
                 value={componentAmount}
                 onChange={(e) => setComponentAmount(e.target.value)}
                 onKeyDown={handleKeyPress}
-                placeholder="Amount (Amounts do not have to sum to 100)"
+                placeholder="Relative Amount (Amounts do not have to sum to 100)"
                 className="form-input"
               />
             </div>
@@ -388,10 +460,58 @@ const EvaporationCalculator = () => {
       {results && (
         <div className="results-container">
           <h3>Results:</h3>
-          <p>Evaporation Rate: {results.ratePerSecond.toFixed(6)} kg/sec</p>
+          <p>Evaporation Rate: {results.ratePerSecond.toFixed(6)} g/sec</p>
           <p>Amount evaporated in 10 seconds: {results.tenSeconds.toFixed(2)} g</p>
           <p>Amount evaporated in 60 seconds: {results.sixtySeconds.toFixed(2)} g</p>
           <p>Amount evaporated in 1 hour: {results.oneHour.toFixed(2)} g</p>
+        </div>
+      )}
+
+      {results && (
+        <div className="form-group">
+          <label className="form-label">Sash Dimensions</label>
+          <div className="dimension-inputs">
+            <div>
+              <label className="form-label">Sash Height (ft)</label>
+              <input
+                type="number"
+                value={sashHeight}
+                onChange={(e) => setSashHeight(e.target.value)}
+                placeholder="Enter height"
+                className="form-input"
+              />
+            </div>
+            <div>
+              <label className="form-label">Sash Width (ft)</label>
+              <input
+                type="number"
+                value={sashWidth}
+                onChange={(e) => setSashWidth(e.target.value)}
+                placeholder="Enter width"
+                className="form-input"
+              />
+            </div>
+          </div>
+        </div>
+
+      )}
+
+      <button   
+        className="calculate-button"
+        onClick={calcConc} 
+        hidden={!sashHeight || ! sashWidth}
+        disabled={ !sashHeight || ! sashWidth || !hoodVelocity || !hoodLength || !hoodDepth || 
+          (mixtureComponents.length === 0 && (!molecularWeightManual || !vaporPressureManual)) || 
+          (mixtureComponents.length === 0 && !manualEntry) }> 
+
+        Calculate Concentration
+
+      </button>
+
+      {concPpm && (
+        <div className="results-container">
+          <h3>Results:</h3>
+          <p>Concentration: {concPpm.toFixed(6)} ppm</p>
         </div>
       )}
 
