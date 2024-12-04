@@ -104,6 +104,9 @@ const EvaporationCalculator = () => {
   useEffect(() => {
     setResults(null);
     setConcPpm(null);
+    setSashHeight('');
+    setSashWidth('');
+    setConcPpm(null);
   }, [mixtureComponents])
 
   useEffect( () => {

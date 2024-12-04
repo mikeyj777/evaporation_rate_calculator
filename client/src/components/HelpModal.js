@@ -131,6 +131,30 @@ const HelpModal = () => {
         </section>
 
         <section>
+          <h3>Chemical Concentration in Air</h3>
+          <p>To calculate the concentration of a chemical in air, use the following steps:</p>
+          <ol>
+            <li>Calculate the mixture molecular weight in the vapor phase.  This follows Raoult's law.</li>
+            <li>Determine the volumetric flow rate of air in cubic feet per second (ft³/s) using the formula:
+              <div className="equation">Volumetric Flow Rate = Sash Height (ft) × Sash Width (ft) × Hood Velocity (ft/min) / 60</div>
+            </li>
+            <li>Calculate the molar flow rate of air in lb-mol/s:
+              <div className="equation">Molar Flow Air = Volumetric Flow Rate (ft³/s) / Molar Specific Volume (391.897 ft³/lb-mol) - This assumes Ideal Gas at 25 deg C</div>
+            </li>
+            <li>Convert the evaporation rate from grams per second (g/s) to pounds per second (lb/s) and then to molar flow rate in lb-mol/s:
+              <div className="equation">Molar Flow Components = Evaporation Rate (g/s) / 1000 × 2.20462 / Mixture MW</div>
+            </li>
+            <li>Calculate the concentration in volume fraction:
+              <div className="equation">Concentration (Vol Fraction) = Molar Flow Components / Molar Flow Air</div>
+            </li>
+            <li>Convert the concentration to ppm:
+              <div className="equation">Concentration (ppm) = Concentration (Vol Fraction) × 1,000,000</div>
+            </li>
+          </ol>
+        </section>
+
+
+        <section>
           <h3>Contact</h3>
           <p>For questions or support, contact Mike James (mjames@eastman.com)</p>
         </section>
