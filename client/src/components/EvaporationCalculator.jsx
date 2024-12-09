@@ -37,14 +37,15 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { 
-  loadChemicalData, 
+import { loadChemicalData } from '../utils/csv_io';
+import {  
   calculateEvaporationRate,
   convertToMolarBasis,
   calculateConcentrationPpm
 } from '../utils/evaporationUtils';
 import '../styles/EvaporationCalculator.css';
 import HelpModal from './HelpModal';
+import {filterAndCalculate, loadTcData, loadDipprCoeffs, getTcValue } from '../utils/getPhysProps';
 
 const EvaporationCalculator = () => {
   // Display state
@@ -69,6 +70,9 @@ const EvaporationCalculator = () => {
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
   const [chemicalData, setChemicalData] = useState([]);
+  const [dipprCoeffs, setDipprCoeffs] = useState([]);
+  const [tcData, setTcData] = useState([]);
+  // const [tc, setTc] = useState(null);
 
   // state for manual input control
   const [manualEntry, setManualEntry] = useState(false);
@@ -81,6 +85,9 @@ const EvaporationCalculator = () => {
 
   useEffect(() => {
     loadChemicalData().then(data => setChemicalData(data));
+    loadTcData().then(data => setTcData(data));
+    loadDipprCoeffs().then(data => setDipprCoeffs(data));
+
     console.log("Thank you for using this tool");
     console.log("The basis for these calculations is a white paper entitled 'Modeling hydrochloric acid evaporation in ALOHA'");
     console.log("The methods detailed in this paper should hold for a wide range of components and mixtures below their normal boiling point.")
@@ -107,6 +114,21 @@ const EvaporationCalculator = () => {
     setSashHeight('');
     setSashWidth('');
     setConcPpm(null);
+  }, [mixtureComponents])
+
+  useEffect( () => {
+    if (mixtureComponents.length === 0 || tcData.length == 0) return;
+    const chem = mixtureComponents[0];
+    const temp_k = 298.15;
+    const tc = getTcValue(chem.casNumber, tcData);
+    console.log("chem:" , chem, " | cas no: ", chem.casNumber, " | TC: ", tc);
+    const surfaceTensionNm = filterAndCalculate(chem.casNumber, "ST", temp_k, tcData); 
+    const vpPa = filterAndCalculate(chem.casNumber, "VP", temp_k, tcData);
+    const liqDensKmolM3 = filterAndCalculate(chem.casNumber, "LDN", temp_k, tcData);
+    const liqViscosityPaS = filterAndCalculate(chem.casNumber, "LVS", temp_k, tcData);
+
+    console.log("chem: ", chem.name, " | st: ", surfaceTensionNm, " N/m | liq dens: ", liqDensKmolM3, " kmol/m3 | liq visc: ", liqViscosityPaS, " Pa.s");
+
   }, [mixtureComponents])
 
   useEffect( () => {
