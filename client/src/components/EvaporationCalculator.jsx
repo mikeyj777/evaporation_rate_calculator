@@ -92,9 +92,11 @@ const EvaporationCalculator = () => {
 
     initializePhysProps();
     console.log("Thank you for using this tool");
-    console.log("The basis for these calculations is a white paper entitled 'Modeling hydrochloric acid evaporation in ALOHA'");
-    console.log("The methods detailed in this paper should hold for a wide range of components and mixtures below their normal boiling point.");
-    console.log("Source:  https://repository.library.noaa.gov/view/noaa/2132");
+    console.log("The basis for these calculations is a dissertation entitled 'Modelling spreading, vaporisation and dissolution of multi-component pools'");
+    console.log("This document summarizes different available methods for pool calculations.  Our model leverages calculations from a few sections.");
+    console.log("The model is based on a spill of a specified amount of liquid in a fume hood.  It will track the total amount available for evaporation ");
+    console.log("over an hour of time, reporting peak evaporation rate and total evaporated at specified intervals.");
+    console.log("Source:  https://discovery.ucl.ac.uk/id/eprint/1386059/1/Maria%20Fernandez_PhD_public%20version.pdf");
     console.log("Contact Mike James (mjames@eastman.com) with any questions.");
   }, []);
 
@@ -277,7 +279,7 @@ const EvaporationCalculator = () => {
       });
       setError('');
       if (nulls.length > 0) {
-        let err = "Could not find the following properties.  Substituting their values for those of water: ";
+        let err = "Some of the properties for provided chemicals are missing.  Substituting their values for those of water.  Missing properties: ";
         nulls.forEach(prop_id => {
             err += `${consts.LONG_FORM_PHYS_PROP_DESCRIPTIONS[prop_id]}, `;
         });

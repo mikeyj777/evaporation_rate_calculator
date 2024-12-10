@@ -19,11 +19,12 @@ const dynamicPoolEvap = (components, temp_k, physProps, spillVolML, hoodVelocity
 
     const nulls = []
 
-    // assumes a spill and initial spread duration of 10 sec;
+    const maxArea = hoodLengthFt * hoodDepthFt / Math.pow(3.28084, 2);
+    const maxRadius = Math.sqrt(maxArea / Math.PI);
+
+    console.log("Assume the spill and initial spread occurs over 10 sec");
     const durationSec = 10;
 
-    console.log("components in dyn evap: ", components);
-    
     const gasRatePerSec = [];
     const totalGasEvapGforOutput = {
         10: null,
@@ -84,19 +85,37 @@ const dynamicPoolEvap = (components, temp_k, physProps, spillVolML, hoodVelocity
     const evapRateLowerLimit_kgs = 4e-5;
     const u = hoodVelocityFtMin / 3.28084 / 60; // wind speed - m/s
 
+    console.log("One factor in the mass transfer coefficient calc is the Schmidt number (Sc).  This compares the kinematic viscosity of air (nu) to the diffusivity (dm) of our evaporating species");
+    console.log("nu = 1.5 e-5 m2/s");
+    console.log("diffusivity = diffusivity water * sqrt(mw_chem / mw_h2o)");
+    console.log("average molecular weight evaporating species: ", mw);
+    console.log("diffusivity water = 2.5e-5 m2/s");
+    console.log("dm = ", dm, " m2/s");
+    console.log("Sc = nu / dm: ", Sc);
+
+    console.log("Start at time t = 1 sec.");
     let t = 1.0;
 
-    // use Shaw and Briscoe radial calc
     let radius = Math.pow(32*gc*vcDot/9/pi,0.25) * Math.pow(t, 3/4);
-    // console.log("radius 1: ", radius, " | vcDot: ", vcDot, " | pi: ", pi);
-    let accVol = vcDot * dtSec; //m3
-    let h = accVol / pi / Math.pow(radius, 2) //m
+    console.log("Use Shaw and Briscoe calc for radius: (32*gc*vcDot/9/pi)^(1/4) * t ^ (3/4): ", radius, "m");
+    console.log("vcDot is the estimated spill rate, which is the quantity spilled over the 10 second assumed duration: ", vcDot, " m3/s");
     
-    // if height calc is below minimum allowable (controlled by roughness factor), set to hmin.  calc radius from that
+
+    let accVol = volM3; //m3
+    let h = accVol / pi / Math.pow(radius, 2) //m
+    console.log("the initial height is the spill volume divided by pool area.");
+    
+    console.log("if height calc is below minimum allowable (1 cm), set to 1 cm.");
     if (h<hmin) {
         h=hmin;
         radius = Math.sqrt(accVol/pi/h);
     }
+    if (radius > maxRadius) {
+        radius = maxRadius;
+        accVol = Math.PI * Math.pow(radius, 2);
+    }
+    console.log("check if spill area is larger than area of lab hood.  adjusted initial height for model: ", h, " m. and radius: ", radius, " m");
+
     let evap = 1 // kg/s
     let prevEvap = 0; // kg/s
     let lostMass = 0; //kg
@@ -114,7 +133,17 @@ const dynamicPoolEvap = (components, temp_k, physProps, spillVolML, hoodVelocity
     };
 
     let maxEvapRate = 0;
-
+    console.log("The model then iteratively calculates the following until the pool is depleted or until it reaches 1 hour of evaporation time");
+    console.log("Mass Transfer Coefficient:  Km = 0.0048 * u ^ (7/9) * diam ^ (-1/9) * Sc ^ (-2/3);")
+    console.log("Evaporation: poolArea * Km * mw * vpress / 8314 / temp_deg_K");
+    console.log("Totalize the evaporated amount using a trapezoid rule approximation.");
+    console.log("Reduce the material quantity in the pool by the amount evaporated.");
+    console.log("Determine new radius using Shaw and Briscoe");
+    console.log("Get latest pool height.  Account for pool spread with a gravitational term:  dr_grav = sqrt(2*gc*(h-hmin)).");
+    console.log("dr_grav is added to the radius");
+    console.log("adjust height to ensure it is not below minimum. Adjust radius to ensure it is below the max.");
+    console.log("Adjust available volume.")
+    console.log("complete the iteration and start the next");
     while (radius > 0 && t <= 3600) {
         t += dtSec;
         Km = 0.0048 * Math.pow(u, 0.77777777778) * 1/Math.pow(radius*2,0.111111111) * 1/Math.pow(Sc, 0.66666667);
@@ -142,7 +171,6 @@ const dynamicPoolEvap = (components, temp_k, physProps, spillVolML, hoodVelocity
         if (t<=durationSec) {
             accVol += vcDot * dtSec;
             radius = 0.75 * Math.pow(32 * gc * vcDot / 9 / pi,0.25) * Math.pow(t, 3/4);
-            h = accVol / pi / Math.pow(radius, 2);
         }
         
         // at each step, determine the calc height is below min.  adjust radius accordingly.
@@ -154,12 +182,15 @@ const dynamicPoolEvap = (components, temp_k, physProps, spillVolML, hoodVelocity
         dr_grav = Math.sqrt(2*gc*(h-hmin));
         radius = radius + dr_grav;
 
+        if (radius > maxRadius) {
+            radius = maxRadius;
+            accVol = Math.PI * Math.pow(radius, 2);
+        }
+
     }
 
     if (accVol <= 0) totalGasEvapGforOutput.timeToCompletelyEvaporateSec = t;
 
-
-    console.log("nulls: ", nulls, " | totalGasEvapGforOutput: ", totalGasEvapGforOutput, " | accVol: ", accVol, " | t: ", t, " | totalGasEvapGforOutput.timeToCompletelyEvaporateSec: ", totalGasEvapGforOutput.timeToCompletelyEvaporateSec);
 
     return {nulls, gasRatePerSec, maxEvapRateAndTime, totalGasEvapGforOutput};
 
