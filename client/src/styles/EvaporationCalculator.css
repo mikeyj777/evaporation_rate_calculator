@@ -72,6 +72,7 @@
   padding: var(--spacing-unit);
   border-radius: var(--border-radius);
   margin-top: var(--spacing-unit);
+  margin-bottom: var(--spacing-unit);
 }
 
 .error-message {
