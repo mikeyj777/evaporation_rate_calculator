@@ -37,7 +37,6 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { loadChemicalData } from '../utils/csv_io';
 import {  
   calculateEvaporationRate,
   convertToMolarBasis,
@@ -45,7 +44,8 @@ import {
 } from '../utils/evaporationUtils';
 import '../styles/EvaporationCalculator.css';
 import HelpModal from './HelpModal';
-import {filterAndCalculate, loadTcData, loadDipprCoeffs, getTcValue } from '../utils/getPhysProps';
+import {loadChemicalData, loadTcData, loadDipprCoeffs, loadDipprConsts } from '../utils/getPhysProps';
+import dynamicPoolEvap from '../utils/dynamicEvap';
 
 const EvaporationCalculator = () => {
   // Display state
@@ -60,6 +60,7 @@ const EvaporationCalculator = () => {
   const [sashWidth, setSashWidth] = useState('');
   const [evapRateGramSec, setEvapRateGramSec] = useState(null);
   const [concPpm, setConcPpm] = useState(null);
+  const [spillAmountG, setSpillAmountG] = useState(null);
   
   // Calculation state
   const [calculationComponents, setCalculationComponents] = useState([]);
@@ -71,8 +72,7 @@ const EvaporationCalculator = () => {
   const [error, setError] = useState('');
   const [chemicalData, setChemicalData] = useState([]);
   const [dipprCoeffs, setDipprCoeffs] = useState([]);
-  const [tcData, setTcData] = useState([]);
-  // const [tc, setTc] = useState(null);
+  const [dipprConsts, setDipprConsts] = useState([]);
 
   // state for manual input control
   const [manualEntry, setManualEntry] = useState(false);
@@ -84,9 +84,9 @@ const EvaporationCalculator = () => {
 
 
   useEffect(() => {
-    loadChemicalData().then(data => setChemicalData(data));
-    loadTcData().then(data => setTcData(data));
+    loadChemicalData().then(data => setChemicalData(data));;
     loadDipprCoeffs().then(data => setDipprCoeffs(data));
+    loadDipprConsts().then(data => setDipprConsts(data));
 
     console.log("Thank you for using this tool");
     console.log("The basis for these calculations is a white paper entitled 'Modeling hydrochloric acid evaporation in ALOHA'");
@@ -114,22 +114,22 @@ const EvaporationCalculator = () => {
     setSashHeight('');
     setSashWidth('');
     setConcPpm(null);
+    setSpillAmountG(null);
   }, [mixtureComponents])
+
+  // ----------------- tester -----------------------
 
   useEffect( () => {
-    if (mixtureComponents.length === 0 || tcData.length == 0) return;
+    if (mixtureComponents.length === 0) return;
     const chem = mixtureComponents[0];
     const temp_k = 298.15;
-    const tc = getTcValue(chem.casNumber, tcData);
-    console.log("chem:" , chem, " | cas no: ", chem.casNumber, " | TC: ", tc);
-    const surfaceTensionNm = filterAndCalculate(chem.casNumber, "ST", temp_k, tcData); 
-    const vpPa = filterAndCalculate(chem.casNumber, "VP", temp_k, tcData);
-    const liqDensKmolM3 = filterAndCalculate(chem.casNumber, "LDN", temp_k, tcData);
-    const liqViscosityPaS = filterAndCalculate(chem.casNumber, "LVS", temp_k, tcData);
+    const val = dynamicPoolEvap(chem.casNumber, temp_k, dipprCoeffs, dipprConsts, 100);
 
-    console.log("chem: ", chem.name, " | st: ", surfaceTensionNm, " N/m | liq dens: ", liqDensKmolM3, " kmol/m3 | liq visc: ", liqViscosityPaS, " Pa.s");
+    console.log(val);
 
   }, [mixtureComponents])
+
+  // -------------------------------------------------
 
   useEffect( () => {
     setMixtureComponents([]);
@@ -494,7 +494,7 @@ const EvaporationCalculator = () => {
 
       {results && (
         <div className="form-group">
-          <label className="form-label">Sash Dimensions</label>
+          <label className="form-label">Inputs for Concentration Calc</label>
           <div className="dimension-inputs">
             <div>
               <label className="form-label">Sash Height (ft)</label>
@@ -513,6 +513,16 @@ const EvaporationCalculator = () => {
                 value={sashWidth}
                 onChange={(e) => setSashWidth(e.target.value)}
                 placeholder="Enter width"
+                className="form-input"
+              />
+            </div>
+            <div>
+              <label className="form-label">Spill Amount (g)</label>
+              <input
+                type="number"
+                value={spillAmountG}
+                onChange={(e) => setSpillAmountG(e.target.value)}
+                placeholder="Enter height"
                 className="form-input"
               />
             </div>

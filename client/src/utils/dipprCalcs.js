@@ -1,4 +1,4 @@
-function eqn_100(consts, t, tc = null, integrated = false) {
+export function eqn_100(consts, t, tc = null, integrated = false) {
     let a = consts[0];
     let b = consts[1];
     let c = consts[2];
@@ -20,7 +20,7 @@ function eqn_100(consts, t, tc = null, integrated = false) {
     }
 }
 
-function eqn_101(consts, t) {
+export function eqn_101(consts, t) {
     let a = consts[0];
     let b = consts[1];
     let c = consts[2];
@@ -34,7 +34,7 @@ function eqn_101(consts, t) {
     }
 }
 
-function eqn_105(consts, t) {
+export function eqn_105(consts, t) {
     let a = consts[0];
     let b = consts[1];
     let c = consts[2];
@@ -47,7 +47,7 @@ function eqn_105(consts, t) {
     }
 }
 
-function eqn_106(consts, t, tc, integrated = false) {
+export function eqn_106(consts, t, tc, integrated = false) {
     let a = consts[0];
     let b = consts[1];
     let c = consts[2];
@@ -67,7 +67,7 @@ function eqn_106(consts, t, tc, integrated = false) {
     }
 }
 
-function eqn_107(consts, t, tc = null, integrated = false) {
+export function eqn_107(consts, t, tc = null, integrated = false) {
     let a = consts[0];
     let b = consts[1];
     let c = consts[2];
@@ -85,7 +85,7 @@ function eqn_107(consts, t, tc = null, integrated = false) {
     }
 }
 
-function eqn_114(consts, t, tc, integrated = false) {
+export function eqn_114(consts, t, tc, integrated = false) {
     let a = consts[0];
     let b = consts[1];
     let c = consts[2];
@@ -105,7 +105,7 @@ function eqn_114(consts, t, tc, integrated = false) {
     }
 }
 
-function eqn_124(consts, t, tc, integrated = false) {
+export function eqn_124(consts, t, tc, integrated = false) {
     let a = consts[0];
     let b = consts[1];
     let c = consts[2];
@@ -126,7 +126,7 @@ function eqn_124(consts, t, tc, integrated = false) {
     }
 }
 
-function eqn_127(consts, t, tc = null, integrated = false) {
+export function eqn_127(consts, t, tc = null, integrated = false) {
     let a = consts[0];
     let b = consts[1];
     let c = consts[2];
