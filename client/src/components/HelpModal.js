@@ -27,9 +27,9 @@ const HelpModal = () => {
         
         <section>
           <h3>About</h3>
-          <p>The basis for these calculations is a white paper entitled 'Modeling hydrochloric acid evaporation in ALOHA'. 
-             The methods detailed in this paper should hold for a wide range of components and mixtures below their normal boiling point.</p>
-          <p>Source: <a href="https://repository.library.noaa.gov/view/noaa/2132">NOAA Technical Memorandum</a></p>
+          <p>The basis for these calculations is a dissertation entitled 'Modelling spreading, vaporisation and dissolution of multi-component pools'. 
+          The paper summarizes different available methods for pool calculations.  Our model leverages calculations from a few sections.</p>
+          <p>Source: <a href="https://discovery.ucl.ac.uk/id/eprint/1386059/1/Maria%20Fernandez_PhD_public%20version.pdf">Dissertation - Dr. Maria Fernandez, PhD</a></p>
         </section>
 
         <section>
@@ -128,6 +128,55 @@ const HelpModal = () => {
             <dt>diameter</dt>
             <dd>√(4 × area / π)</dd>
           </dl>
+        </section>
+
+        <section>
+          <h3>Evaporation Model</h3>
+          <p>The evaporation model calculates the evaporation rate of a chemical spill in a laboratory hood environment. It takes into account various physical properties and environmental conditions to estimate the evaporation rate over time.</p>
+          
+          
+          <h4>Detailed Steps</h4>
+          <ol>
+            <li><strong>Initial Calculations</strong>:
+              <ul>
+                <li>Calculate the maximum area and radius of the spill based on hood dimensions.</li>
+                <li>Assume the spill spreads over 10 seconds.</li>
+                <li>Initialize variables for molecular weight, vapor pressure, and liquid density.</li>
+              </ul>
+            </li>
+            <li><strong>Property Retrieval</strong>:
+              <ul>
+                <li>If manual inputs are not provided, retrieve properties using utility functions.</li>
+                <li>Log any missing properties.</li>
+              </ul>
+            </li>
+            <li><strong>Evaporation Calculation</strong>:
+              <ul>
+                <li>Calculate the initial radius and height of the spill.</li>
+                <li>Adjust height and radius if they fall below minimum values or exceed maximum area.</li>
+              </ul>
+            </li>
+            <li><strong>Iterative Evaporation Process</strong>:
+              <ul>
+                <li>Calculate the mass transfer coefficient using the Schmidt number.</li>
+                <li>Determine the evaporation rate and update the total evaporated mass.</li>
+                <li>Adjust the spill volume and radius iteratively until the spill is completely evaporated or 1 hour has passed.</li>
+              </ul>
+            </li>
+            <li><strong>Final Output</strong>:
+              <ul>
+                <li>Return the results including any missing properties, evaporation rates, maximum evaporation rate and time, and total evaporated gas.</li>
+              </ul>
+            </li>
+          </ol>
+          
+          
+          <h4>Notes</h4>
+          <ul>
+            <li>Ensure all physical properties are accurately defined for precise calculations.</li>
+            <li>Adjust manual inputs as needed for specific scenarios.</li>
+            <li>The function assumes a constant spill rate over the initial 10 seconds.</li>
+          </ul>
         </section>
 
         <section>

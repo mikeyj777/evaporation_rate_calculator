@@ -93,9 +93,8 @@ const EvaporationCalculator = () => {
     initializePhysProps();
     console.log("Thank you for using this tool");
     console.log("The basis for these calculations is a dissertation entitled 'Modelling spreading, vaporisation and dissolution of multi-component pools'");
-    console.log("This document summarizes different available methods for pool calculations.  Our model leverages calculations from a few sections.");
-    console.log("The model is based on a spill of a specified amount of liquid in a fume hood.  It will track the total amount available for evaporation ");
-    console.log("over an hour of time, reporting peak evaporation rate and total evaporated at specified intervals.");
+    console.log("The paper summarizes different available methods for pool calculations.  Our model leverages calculations from a few sections.");
+    console.log("Our model is based on a spill of a specified amount of liquid in a fume hood.  It will track the evaporation over an hour, reporting peak evaporation rate and total evaporated mass at specified intervals.");
     console.log("Source:  https://discovery.ucl.ac.uk/id/eprint/1386059/1/Maria%20Fernandez_PhD_public%20version.pdf");
     console.log("Contact Mike James (mjames@eastman.com) with any questions.");
   }, []);
