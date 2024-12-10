@@ -190,7 +190,7 @@ const HelpModal = () => {
             <li>Calculate the molar flow rate of air in lb-mol/s:
               <div className="equation">Molar Flow Air = Volumetric Flow Rate (ft³/s) / Molar Specific Volume (391.897 ft³/lb-mol) - This assumes Ideal Gas at 25 deg C</div>
             </li>
-            <li>Convert the evaporation rate from grams per second (g/s) to pounds per second (lb/s) and then to molar flow rate in lb-mol/s:
+            <li>Convert the peak evaporation rate from grams per second (g/s) to pounds per second (lb/s) and then to molar flow rate in lb-mol/s:
               <div className="equation">Molar Flow Components = Evaporation Rate (g/s) / 1000 × 2.20462 / Mixture MW</div>
             </li>
             <li>Calculate the concentration in volume fraction:
