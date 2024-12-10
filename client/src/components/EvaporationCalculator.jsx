@@ -61,7 +61,7 @@ const EvaporationCalculator = () => {
   const [sashWidth, setSashWidth] = useState('');
   const [evapRateGramSec, setEvapRateGramSec] = useState('');
   const [concPpm, setConcPpm] = useState('');
-  const [spillAmountG, setSpillAmountG] = useState('');
+  const [spillAmountML, setSpillAmountML] = useState('');
   const [liquidDensityLbGalManual, setLiquidDensityLbGalManual] = useState('');
   
   // Calculation state
@@ -93,9 +93,9 @@ const EvaporationCalculator = () => {
     initializePhysProps();
     console.log("Thank you for using this tool");
     console.log("The basis for these calculations is a white paper entitled 'Modeling hydrochloric acid evaporation in ALOHA'");
-    console.log("The methods detailed in this paper should hold for a wide range of components and mixtures below their normal boiling point.")
-    console.log("Source:  https://repository.library.noaa.gov/view/noaa/2132")
-    console.log("Contact Mike James (mjames@eastman.com) with any questions.")
+    console.log("The methods detailed in this paper should hold for a wide range of components and mixtures below their normal boiling point.");
+    console.log("Source:  https://repository.library.noaa.gov/view/noaa/2132");
+    console.log("Contact Mike James (mjames@eastman.com) with any questions.");
   }, []);
 
   useEffect(() => {
@@ -122,7 +122,7 @@ const EvaporationCalculator = () => {
     setSashHeight('');
     setSashWidth('');
     setConcPpm('');
-    setSpillAmountG('');
+    setSpillAmountML('');
     setLiquidDensityLbGalManual('');
   }, [mixtureComponents])
 
@@ -236,7 +236,7 @@ const EvaporationCalculator = () => {
   }
 
   const calculateResults = () => {
-    if (!hoodVelocity || !hoodLength || !hoodDepth || !spillAmountG) {
+    if (!hoodVelocity || !hoodLength || !hoodDepth || !spillAmountML) {
       setError('Please provide all hood dimensions, spill amount and face velocity');
       return;
     }
@@ -247,23 +247,13 @@ const EvaporationCalculator = () => {
     }
 
     try {
-      // dynamicPoolEvap = (chems, temp_k, physProps, spillMassG, hoodVelocityFtMin, hoodLengthFt, hoodDepthFt, mwManual, vpManual, liquidDensityManualLbGal)
-      // return {nulls, gasRatePerSec, maxEvapRateAndTime, totalGasEvapGforOutput};
-      // const maxEvapRateAndTime = {
-      //   evapRateGperSec: null,
-      //   timeSec: null,
-      // };
-      // const totalGasEvapGforOutput = {
-      //   10: null,
-      //   60: null,
-      //   3600: null
-      // };
+      
 
-      const evapData = calculateEvaporationRate(
+      const evapData = dynamicPoolEvap(
         calculationComponents,
         298.15,
         physProps,
-        parseFloat(spillAmountG),
+        parseFloat(spillAmountML),
         parseFloat(hoodVelocity),
         parseFloat(hoodLength),
         parseFloat(hoodDepth),
@@ -355,11 +345,11 @@ const EvaporationCalculator = () => {
 
       <div className="form-group">
         <div>
-          <label className="form-label">Spill Amount (g)</label>
+          <label className="form-label">Spill Amount (mL)</label>
           <input
             type="number"
-            value={spillAmountG}
-            onChange={(e) => setSpillAmountG(e.target.value)}
+            value={spillAmountML}
+            onChange={(e) => setSpillAmountML(e.target.value)}
             placeholder="Enter height"
             className="form-input"
           />
@@ -544,7 +534,7 @@ const EvaporationCalculator = () => {
         disabled={  !hoodVelocity || !hoodLength || !hoodDepth || 
           (mixtureComponents.length === 0 && (!molecularWeightManual || !vaporPressureManual)) || 
           (mixtureComponents.length === 0 && !manualEntry) || 
-          !spillAmountG }> 
+          !spillAmountML }> 
 
         Calculate Evaporation Rate 
 

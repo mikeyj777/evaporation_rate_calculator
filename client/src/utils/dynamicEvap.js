@@ -15,7 +15,7 @@ import { getAverageMolecularWeight, getMixtureVaporPressurePa, getAverageLiquidD
 // //Viscosity (cP)
 
 
-const dynamicPoolEvap = (components, temp_k, physProps, spillMassG, hoodVelocityFtMin, hoodLengthFt, hoodDepthFt, mwManual, vpManual, liquidDensityManualLbGal) => {
+const dynamicPoolEvap = (components, temp_k, physProps, spillVolML, hoodVelocityFtMin, hoodLengthFt, hoodDepthFt, mwManual, vpManual, liquidDensityManualLbGal) => {
 
     const nulls = []
 
@@ -68,7 +68,7 @@ const dynamicPoolEvap = (components, temp_k, physProps, spillMassG, hoodVelocity
     }
 
     const rho_KgM3 = liqDensLbGal / consts.LB_PER_KG * consts.GAL_PER_M3;
-    const volM3 = spillMassG / 1000 / rho_KgM3;
+    const volM3 = spillVolML * 1e-6;
     const vcDot = volM3 / durationSec; // m3/sec
     const dtSec = 1.0;
     const pi = Math.PI;
