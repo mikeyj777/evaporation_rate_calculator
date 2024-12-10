@@ -16,8 +16,15 @@ const eqnFunctions = {
 export default class PhysProps {
 
     constructor() {
-        this.dipprCoeffs = this.#loadDipprCoeffs();
-        this.dipprConsts = this.#loadDipprConsts();
+        this.dipprCoeffs = [];
+        this.dipprConsts = [];
+        
+        this.initializeData();
+    }
+
+    async initializeData() {
+        this.dipprCoeffs = await this.#loadDipprCoeffs();
+        this.dipprConsts = await this.#loadDipprConsts();
     }
 
     async loadChemicalData() {
@@ -83,7 +90,7 @@ export default class PhysProps {
     getPropertyValue(cas_no, property_id) {
         // Find the row with the specified cas_no and property_id
 
-        const tcData = this.getConstData(property_id);
+        const tcData = this.#getConstData(property_id);
         const row = tcData.find(row => row.cas_no === cas_no);
 
         if (!row) {
