@@ -164,38 +164,60 @@ const EvaporationCalculator = () => {
     setFilteredChemicals([]);
   };
 
+  const normalizeToMolarBasis = (updatedMixtureComponents) => {
+    let totalAmt = 0;
+    const newMix = updatedMixtureComponents.map(tempChem => {
+      let newAmount = tempChem.originalAmount;
+      if (!isMolarBasis) newAmount = tempChem.originalAmount / tempChem.molecularWeight;
+      totalAmt += newAmount;
+      return {
+        amount: newAmount,
+        casNumber: tempChem.casNumber,
+        molecularWeight: tempChem.molecularWeight,
+        name: tempChem.name,
+        vaporPressureConstants: tempChem.vaporPressureConstants,
+        originalAmount: tempChem.originalAmount,
+      };
+    });
+  
+    const normalizedMix = newMix.map(tempChem => ({
+      ...tempChem,
+      amount: tempChem.amount / totalAmt
+    }));
+    return normalizedMix;
+  }
+
   const handleAddComponent = () => {
     if (!selectedChemical) {
       setError('Please select a valid chemical from the dropdown');
       return;
     }
-
+  
     if (!componentAmount) {
       setError('Please enter component amount');
       return;
     }
-
+  
     const amount = parseFloat(componentAmount);
     if (isNaN(amount) || amount <= 0) {
       setError('Please enter a valid positive number');
       return;
     }
-
+  
+    console.log("component amount: ", amount);
+  
     const newComponent = {
       ...selectedChemical,
       amount,
       originalAmount: amount,
       isMolar: isMolarBasis
     };
-
-    setMixtureComponents(prev => [...prev, newComponent]);
-    
-    // Update calculation components
-    const calcComponent = isMolarBasis ? 
-      newComponent : 
-      { ...newComponent, amount: convertToMolarBasis([newComponent])[0].amount };
-    setCalculationComponents(prev => [...prev, calcComponent]);
-
+  
+    const updatedMixtureComponents = [...mixtureComponents, newComponent];
+    setMixtureComponents(updatedMixtureComponents);
+  
+    setCalculationComponents(normalizeToMolarBasis(updatedMixtureComponents));
+  
     // Reset inputs
     setChemicalInput('');
     setComponentAmount('');
@@ -203,14 +225,15 @@ const EvaporationCalculator = () => {
     setFilteredChemicals([]);
     setError('');
   };
+  
+  useEffect(() => {
+    if (calculationComponents.length > 0) console.log("calc components:  ", calculationComponents);
+  }, [calculationComponents]);
 
   const removeComponent = (identifier) => {
-    setMixtureComponents(prev => 
-      prev.filter(comp => (comp.casNumber || comp.name) !== identifier)
-    );
-    setCalculationComponents(prev =>
-      prev.filter(comp => (comp.casNumber || comp.name) !== identifier)
-    );
+    const updatedMixtureComponents = mixtureComponents.filter(comp => (comp.casNumber || comp.name) !== identifier);
+    setMixtureComponents(updatedMixtureComponents);
+    setCalculationComponents(normalizeToMolarBasis(updatedMixtureComponents));
   };
 
   const calcConc = () => {
@@ -266,7 +289,15 @@ const EvaporationCalculator = () => {
       const maxEvapData = evapData.maxEvapRateAndTime;
       const totalGasEvapGforOutput = evapData.totalGasEvapGforOutput;
       const nulls = evapData.nulls;
+      
+      let completeEvapTimeStr = " > 1 hour";
+      const completeEvapTimeSec = totalGasEvapGforOutput.timeToCompletelyEvaporateSec;
+      if (completeEvapTimeSec) {
+        const completeEvapTimeMin = completeEvapTimeSec / 60;
 
+        completeEvapTimeStr = String(completeEvapTimeSec) + " sec";
+        if (completeEvapTimeMin >= 1) completeEvapTimeStr = completeEvapTimeMin.toFixed(2) + " min";
+      }
 
       setResults({
         peakEvapRate: maxEvapData.evapRateGperSec,
@@ -274,7 +305,7 @@ const EvaporationCalculator = () => {
         tenSeconds: totalGasEvapGforOutput[10],
         sixtySeconds: totalGasEvapGforOutput[60],
         oneHour: totalGasEvapGforOutput[3600],
-        completeEvapTime: totalGasEvapGforOutput.timeToCompletelyEvaporateSec,
+        completeEvapTime: completeEvapTimeStr,
       });
       setError('');
       if (nulls.length > 0) {
@@ -558,7 +589,7 @@ const EvaporationCalculator = () => {
           <p>Amount evaporated in 10 seconds: {results.tenSeconds ? results.tenSeconds.toFixed(2): "N/A"} g</p>
           <p>Amount evaporated in 60 seconds: {results.sixtySeconds ? results.sixtySeconds.toFixed(2) : "N/A"} g</p>
           <p>Amount evaporated in 1 hour: {results.oneHour ? results.oneHour.toFixed(2) : "N/A"} g</p>
-          <p>Time for Material to Completely Evaporate: {results.completeEvapTime ? results.completeEvapTime + " s" : " > 1 hour"}</p>
+          <p>Time for Material to Completely Evaporate: {results.completeEvapTime}</p>
 
         </div>
       )}

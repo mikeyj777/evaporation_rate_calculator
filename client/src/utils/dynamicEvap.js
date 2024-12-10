@@ -57,6 +57,8 @@ const dynamicPoolEvap = (components, temp_k, physProps, spillVolML, hoodVelocity
         }
     }
 
+    console.log("Overall VP: ", vpPa, " Pa");
+
     if (!mw) {
         nulls.push("MW");
         mw = physProps.getPropertyValue(consts.CAS_NO_WATER, "VP");
@@ -186,7 +188,7 @@ const dynamicPoolEvap = (components, temp_k, physProps, spillVolML, hoodVelocity
             radius = maxRadius;
             accVol = Math.PI * Math.pow(radius, 2);
         }
-
+        // console.log("time: ", t, " sec | radius: ", radius, " m | height: ", h, " m | acc Vol: ", accVol, " m3 | evap rate: ", evap, " kg/s | total evaporated: ", totalEvaporatedKg, " kg");
     }
 
     if (accVol <= 0) totalGasEvapGforOutput.timeToCompletelyEvaporateSec = t;

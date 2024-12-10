@@ -75,7 +75,6 @@ export const calculateVaporPressure = (A, B, C, D, E, tempK = TEMP_K) => {
   // Returns vapor pressure in Pascals (converted from mmHg)
   if (!A || !B || !C || !D || !E) return null;
   const pressPa = Math.exp(A + B / tempK + C * Math.log(tempK)+ D * Math.pow(tempK, E));
-  console.log("vpress pa: ", pressPa);
   return pressPa;
 };
 
@@ -124,7 +123,7 @@ export const calculateVaporPhaseAveMolecularWeight = (components) => {
 }
 
 export const getMixtureVaporPressurePa = (components, tempK = TEMP_K) => {
-
+  console.log("in getMixtureVaporPressurePa.  components: ", components);
   const mixtVp = components.reduce((totalPressure, comp) => {
     const pureCompVaporPressure = calculateVaporPressure(
       comp.vaporPressureConstants.A,
@@ -134,7 +133,7 @@ export const getMixtureVaporPressurePa = (components, tempK = TEMP_K) => {
       comp.vaporPressureConstants.E,
       tempK
     );
-    console.log("component: ", comp.name, " | pure component vapor pressure: ", pureCompVaporPressure, " Pa");
+    console.log("component: ", comp.name, " | pure component vapor pressure: ", pureCompVaporPressure, " Pa", " | comp amount: ", comp.amount, " | vp contribution: ", comp.amount * pureCompVaporPressure, " Pa");
     return totalPressure + (comp.amount * pureCompVaporPressure);
   }, 0);
 
