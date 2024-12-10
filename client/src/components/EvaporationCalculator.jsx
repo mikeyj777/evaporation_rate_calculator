@@ -558,7 +558,7 @@ const EvaporationCalculator = () => {
           <p>Amount evaporated in 10 seconds: {results.tenSeconds ? results.tenSeconds.toFixed(2): "N/A"} g</p>
           <p>Amount evaporated in 60 seconds: {results.sixtySeconds ? results.sixtySeconds.toFixed(2) : "N/A"} g</p>
           <p>Amount evaporated in 1 hour: {results.oneHour ? results.oneHour.toFixed(2) : "N/A"} g</p>
-          <p>Time for Material to Completely Evaporate: {results.completeEvapTime ? results.completeEvapTime : " > 1 hour"} s</p>
+          <p>Time for Material to Completely Evaporate: {results.completeEvapTime ? results.completeEvapTime + " s" : " > 1 hour"}</p>
 
         </div>
       )}
