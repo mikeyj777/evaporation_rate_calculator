@@ -1,7 +1,6 @@
 import * as consts from './consts';
-import { filterAndCalculate } from './getPhysProps';
 
-const dynamicPoolEvap = (cas_no, temp_k, dipprCoeffs, dipprConsts, spillMassG) => {
+const dynamicPoolEvap = (cas_no, temp_k, physProps, spillMassG) => {
 
     // track phys props without calcs.  these are subbed with water.  will notify user afterwards.
     const nulls = []
@@ -22,27 +21,28 @@ const dynamicPoolEvap = (cas_no, temp_k, dipprCoeffs, dipprConsts, spillMassG) =
     // double[120];
 
     const gasRtPfl = new Array(120);
-    //filterAndCalculate(cas_no, property_id, temperature, dipprCoeffs, dipprConsts, integrated=false)
-    let surfaceTensionNm = filterAndCalculate(cas_no, "ST", temp_k, dipprCoeffs, dipprConsts);
-    let vpPa = filterAndCalculate(cas_no, "VP", temp_k, dipprCoeffs, dipprConsts);
-    let liqDensKmolM3 = filterAndCalculate(cas_no, "LDN", temp_k, dipprCoeffs, dipprConsts);
-    let liqViscosityPaS = filterAndCalculate(cas_no, "LVS", temp_k, dipprCoeffs, dipprConsts);
+    //filterAndCalculate(cas_no, property_id, temperature, integrated=false)
+    let surfaceTensionNm = physProps.filterAndCalculate(cas_no, "ST", temp_k);
+    let vpPa = physProps.filterAndCalculate(cas_no, "VP", temp_k);
+    let liqDensKmolM3 = physProps.filterAndCalculate(cas_no, "LDN", temp_k);
+    let liqViscosityPaS = physProps.filterAndCalculate(cas_no, "LVS", temp_k);
+    let mw = physProps.getPropertyValue(cas_no, "MW");
 
     if (!surfaceTensionNm) {
         nulls.push("ST");
-        surfaceTensionNm = filterAndCalculate(consts.CAS_NO_WATER, "ST", temp_k, dipprCoeffs, dipprConsts);
+        surfaceTensionNm = physProps.filterAndCalculate(consts.CAS_NO_WATER, "ST", temp_k);
     }
     if (!vpPa) {
         nulls.push("VP");
-        vpPa = filterAndCalculate(consts.CAS_NO_WATER, "VP", temp_k, dipprCoeffs, dipprConsts);
+        vpPa = physProps.filterAndCalculate(consts.CAS_NO_WATER, "VP", temp_k);
     }
     if (!liqDensKmolM3) {
         nulls.push("LDN");
-        liqDensKmolM3 = filterAndCalculate(consts.CAS_NO_WATER, "LDN", temp_k, dipprCoeffs, dipprConsts);
+        liqDensKmolM3 = physProps.filterAndCalculate(consts.CAS_NO_WATER, "LDN", temp_k);
     }
     if (!liqViscosityPaS) {
         nulls.push("LVS");
-        liqViscosityPaS = filterAndCalculate(consts.CAS_NO_WATER, "LVS", temp_k, dipprCoeffs, dipprConsts);
+        liqViscosityPaS = physProps.filterAndCalculate(consts.CAS_NO_WATER, "LVS", temp_k);
     }
 
     console.log("chem: ", cas_no, " | st: ", surfaceTensionNm, " N/m | liq dens: ", liqDensKmolM3, " kmol/m3 | liq visc: ", liqViscosityPaS, " Pa.s");

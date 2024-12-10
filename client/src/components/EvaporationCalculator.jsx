@@ -44,7 +44,7 @@ import {
 } from '../utils/evaporationUtils';
 import '../styles/EvaporationCalculator.css';
 import HelpModal from './HelpModal';
-import {loadChemicalData, loadTcData, loadDipprCoeffs, loadDipprConsts } from '../utils/getPhysProps';
+import PhysProps from '../utils/getPhysProps';
 import dynamicPoolEvap from '../utils/dynamicEvap';
 
 const EvaporationCalculator = () => {
@@ -71,8 +71,7 @@ const EvaporationCalculator = () => {
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
   const [chemicalData, setChemicalData] = useState([]);
-  const [dipprCoeffs, setDipprCoeffs] = useState([]);
-  const [dipprConsts, setDipprConsts] = useState([]);
+  const [physProps, setPhysProps] = useState([]);
 
   // state for manual input control
   const [manualEntry, setManualEntry] = useState(false);
@@ -84,9 +83,16 @@ const EvaporationCalculator = () => {
 
 
   useEffect(() => {
-    loadChemicalData().then(data => setChemicalData(data));;
-    loadDipprCoeffs().then(data => setDipprCoeffs(data));
-    loadDipprConsts().then(data => setDipprConsts(data));
+    const initializePhysProps = async () => {
+      const props = new PhysProps();
+      setPhysProps(props);
+      const data = await props.loadChemicalData();
+      setChemicalData(data);
+  };
+
+  initializePhysProps();
+
+  
 
     console.log("Thank you for using this tool");
     console.log("The basis for these calculations is a white paper entitled 'Modeling hydrochloric acid evaporation in ALOHA'");
@@ -123,7 +129,8 @@ const EvaporationCalculator = () => {
     if (mixtureComponents.length === 0) return;
     const chem = mixtureComponents[0];
     const temp_k = 298.15;
-    const val = dynamicPoolEvap(chem.casNumber, temp_k, dipprCoeffs, dipprConsts, 100);
+              //dynamicPoolEvap = (cas_no, temp_k, physProps, spillMassG)
+    const val = dynamicPoolEvap(chem.casNumber, temp_k, physProps, 100);
 
     console.log(val);
 
