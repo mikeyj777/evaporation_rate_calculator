@@ -21,12 +21,15 @@ const dynamicPoolEvap = (components, temp_k, physProps, spillVolML, hoodVelocity
 
     // assumes a spill and initial spread duration of 10 sec;
     const durationSec = 10;
+
+    console.log("components in dyn evap: ", components);
     
     const gasRatePerSec = [];
     const totalGasEvapGforOutput = {
         10: null,
         60: null,
-        3600: null
+        3600: null,
+        timeToCompletelyEvaporateSec: null
     };
 
     let mw = mwManual;
@@ -153,7 +156,10 @@ const dynamicPoolEvap = (components, temp_k, physProps, spillVolML, hoodVelocity
 
     }
 
+    if (accVol <= 0) totalGasEvapGforOutput.timeToCompletelyEvaporateSec = t;
 
+
+    console.log("nulls: ", nulls, " | totalGasEvapGforOutput: ", totalGasEvapGforOutput, " | accVol: ", accVol, " | t: ", t, " | totalGasEvapGforOutput.timeToCompletelyEvaporateSec: ", totalGasEvapGforOutput.timeToCompletelyEvaporateSec);
 
     return {nulls, gasRatePerSec, maxEvapRateAndTime, totalGasEvapGforOutput};
 

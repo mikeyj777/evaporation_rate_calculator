@@ -122,7 +122,7 @@ const EvaporationCalculator = () => {
     setSashHeight('');
     setSashWidth('');
     setConcPpm('');
-    setSpillAmountML('');
+    setEvapRateGramSec('');
     setLiquidDensityLbGalManual('');
   }, [mixtureComponents])
 
@@ -273,6 +273,7 @@ const EvaporationCalculator = () => {
         tenSeconds: totalGasEvapGforOutput[10],
         sixtySeconds: totalGasEvapGforOutput[60],
         oneHour: totalGasEvapGforOutput[3600],
+        completeEvapTime: totalGasEvapGforOutput.timeToCompletelyEvaporateSec,
       });
       setError('');
       if (nulls.length > 0) {
@@ -553,9 +554,11 @@ const EvaporationCalculator = () => {
           <h3>Results:</h3>
           <p>Peak Evaporation Rate: {results.peakEvapRate.toFixed(6)} g/sec</p>
           <p>Time to Peak: {results.timeToPeak} sec</p>
-          <p>Amount evaporated in 10 seconds: {results.tenSeconds.toFixed(2)} g</p>
-          <p>Amount evaporated in 60 seconds: {results.sixtySeconds.toFixed(2)} g</p>
-          <p>Amount evaporated in 1 hour: {results.oneHour.toFixed(2)} g</p>
+          <p>Amount evaporated in 10 seconds: {results.tenSeconds ? results.tenSeconds.toFixed(2): "N/A"} g</p>
+          <p>Amount evaporated in 60 seconds: {results.sixtySeconds ? results.sixtySeconds.toFixed(2) : "N/A"} g</p>
+          <p>Amount evaporated in 1 hour: {results.oneHour ? results.oneHour.toFixed(2) : "N/A"} g</p>
+          <p>Time for Material to Completely Evaporate: {results.completeEvapTime ? results.completeEvapTime : " > 1 hour"} s</p>
+
         </div>
       )}
 
