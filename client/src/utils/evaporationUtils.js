@@ -61,7 +61,6 @@ export const getAverageMolecularWeight = (mixture) => {
 }
 
 export const calculateVaporPressureFromArray = (vpConsts, tempK = TEMP_K) => {
-  console.log("vp consts detached:  ", vpConsts);
   const A = vpConsts.A;
   const B = vpConsts.B;
   const C = vpConsts.C;
@@ -123,7 +122,6 @@ export const calculateVaporPhaseAveMolecularWeight = (components) => {
 }
 
 export const getMixtureVaporPressurePa = (components, tempK = TEMP_K) => {
-  console.log("in getMixtureVaporPressurePa.  components: ", components);
   const mixtVp = components.reduce((totalPressure, comp) => {
     const pureCompVaporPressure = calculateVaporPressure(
       comp.vaporPressureConstants.A,
@@ -133,7 +131,6 @@ export const getMixtureVaporPressurePa = (components, tempK = TEMP_K) => {
       comp.vaporPressureConstants.E,
       tempK
     );
-    console.log("component: ", comp.name, " | pure component vapor pressure: ", pureCompVaporPressure, " Pa", " | comp amount: ", comp.amount, " | vp contribution: ", comp.amount * pureCompVaporPressure, " Pa");
     return totalPressure + (comp.amount * pureCompVaporPressure);
   }, 0);
 
@@ -146,7 +143,6 @@ export const calculateConcentrationPpm = (sashHeightFt, sashWidthFt, hoodVelocit
   // 1. Calculate mixture molecular weight in vapor phase
   let mixtureMW = mwManual;
   if (!mixtureMW) mixtureMW = calculateVaporPhaseAveMolecularWeight(components);
-  console.log("components: ", components);
   console.log("average molecular wt in vapor phase: ", mixtureMW);
   
   const volRateFt3Min = sashHeightFt * sashWidthFt * hoodVelocityFtMin;
@@ -193,7 +189,6 @@ export const calculateEvaporationRate = (components, hoodVelocity, hoodLength, h
   // 1. Calculate mixture molecular weight
   let mixtureMW = mwManual;
   if (!mixtureMW) mixtureMW = getAverageMolecularWeight(components);
-  console.log("components: ", components);
   console.log("average molecular wt: ", mixtureMW);
   
   

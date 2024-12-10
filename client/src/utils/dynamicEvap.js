@@ -57,7 +57,6 @@ const dynamicPoolEvap = (components, temp_k, physProps, spillVolML, hoodVelocity
         }
     }
 
-    console.log("Overall VP: ", vpPa, " Pa");
 
     if (!mw) {
         nulls.push("MW");

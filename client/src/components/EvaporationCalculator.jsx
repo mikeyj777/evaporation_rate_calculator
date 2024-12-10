@@ -204,8 +204,6 @@ const EvaporationCalculator = () => {
       return;
     }
   
-    console.log("component amount: ", amount);
-  
     const newComponent = {
       ...selectedChemical,
       amount,
@@ -225,10 +223,6 @@ const EvaporationCalculator = () => {
     setFilteredChemicals([]);
     setError('');
   };
-  
-  useEffect(() => {
-    if (calculationComponents.length > 0) console.log("calc components:  ", calculationComponents);
-  }, [calculationComponents]);
 
   const removeComponent = (identifier) => {
     const updatedMixtureComponents = mixtureComponents.filter(comp => (comp.casNumber || comp.name) !== identifier);
