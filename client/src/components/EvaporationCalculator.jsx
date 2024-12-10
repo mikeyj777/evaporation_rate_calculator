@@ -46,6 +46,7 @@ import '../styles/EvaporationCalculator.css';
 import HelpModal from './HelpModal';
 import PhysProps from '../utils/getPhysProps';
 import dynamicPoolEvap from '../utils/dynamicEvap';
+import * as consts from '../utils/consts';
 
 const EvaporationCalculator = () => {
   // Display state
@@ -56,11 +57,12 @@ const EvaporationCalculator = () => {
   const [componentAmount, setComponentAmount] = useState('');
   const [isMolarBasis, setIsMolarBasis] = useState(false);
   const [mixtureComponents, setMixtureComponents] = useState([]);
-  const [sashHeight, setSashHeight] = useState('');
-  const [sashWidth, setSashWidth] = useState('');
+  const [sashHeight, setSashHeight] = useState(null);
+  const [sashWidth, setSashWidth] = useState(null);
   const [evapRateGramSec, setEvapRateGramSec] = useState(null);
   const [concPpm, setConcPpm] = useState(null);
   const [spillAmountG, setSpillAmountG] = useState(null);
+  const [liquidDensityLbGalManual, setLiquidDensityLbGalManual] = useState(null);
   
   // Calculation state
   const [calculationComponents, setCalculationComponents] = useState([]);
@@ -71,7 +73,7 @@ const EvaporationCalculator = () => {
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
   const [chemicalData, setChemicalData] = useState([]);
-  const [physProps, setPhysProps] = useState([]);
+  const [physProps, setPhysProps] = useState(null);
 
   // state for manual input control
   const [manualEntry, setManualEntry] = useState(false);
@@ -86,20 +88,21 @@ const EvaporationCalculator = () => {
     const initializePhysProps = async () => {
       const props = new PhysProps();
       setPhysProps(props);
-      const data = await props.loadChemicalData();
-      setChemicalData(data);
-  };
+    };
 
-  initializePhysProps();
-
-  
-
+    initializePhysProps();
     console.log("Thank you for using this tool");
     console.log("The basis for these calculations is a white paper entitled 'Modeling hydrochloric acid evaporation in ALOHA'");
     console.log("The methods detailed in this paper should hold for a wide range of components and mixtures below their normal boiling point.")
     console.log("Source:  https://repository.library.noaa.gov/view/noaa/2132")
     console.log("Contact Mike James (mjames@eastman.com) with any questions.")
   }, []);
+
+  useEffect(() => {
+    if (physProps && physProps.chemicalData.length > 0) {
+      setChemicalData(physProps.chemicalData);
+    }
+  })
 
   useEffect(() => {
     if (chemicalInput.length > 0) {
@@ -116,25 +119,25 @@ const EvaporationCalculator = () => {
 
   useEffect(() => {
     setResults(null);
-    setConcPpm(null);
-    setSashHeight('');
-    setSashWidth('');
+    setSashHeight(null);
+    setSashWidth(null);
     setConcPpm(null);
     setSpillAmountG(null);
+    setLiquidDensityLbGalManual(null);
   }, [mixtureComponents])
 
   // ----------------- tester -----------------------
 
-  useEffect( () => {
-    if (mixtureComponents.length === 0) return;
-    const chem = mixtureComponents[0];
-    const temp_k = 298.15;
-              //dynamicPoolEvap = (cas_no, temp_k, physProps, spillMassG, hoodVelocityFtMin)
-    const val = dynamicPoolEvap(chem.casNumber, temp_k, physProps, 100, hoodVelocity);
+  // useEffect( () => {
+  //   if (mixtureComponents.length === 0) return;
+  //   const chem = mixtureComponents[0];
+  //   const temp_k = 298.15;
+  //             //dynamicPoolEvap = (cas_no, temp_k, physProps, spillMassG, hoodVelocityFtMin)
+  //   const val = dynamicPoolEvap(chem.casNumber, temp_k, physProps, 100, hoodVelocity);
 
-    console.log(val);
+  //   console.log(val);
 
-  }, [mixtureComponents])
+  // }, [mixtureComponents])
 
   // -------------------------------------------------
 
@@ -232,34 +235,66 @@ const EvaporationCalculator = () => {
   }
 
   const calculateResults = () => {
-    if (!hoodVelocity || !hoodLength || !hoodDepth) {
-      setError('Please provide all hood dimensions and face velocity');
+    if (!hoodVelocity || !hoodLength || !hoodDepth || !spillAmountG) {
+      setError('Please provide all hood dimensions, spill amount and face velocity');
       return;
     }
 
     if (calculationComponents.length === 0 && (!manualEntry)) {
-      setError('Please add at least one component to the mixture');
+      setError('Please add at least one component to the mixture or use manual entry mode.');
       return;
     }
 
     try {
-      const evaporationRate = calculateEvaporationRate(
+      // dynamicPoolEvap = (chems, temp_k, physProps, spillMassG, hoodVelocityFtMin, hoodLengthFt, hoodDepthFt, mwManual, vpManual, liquidDensityManualLbGal)
+      // return {nulls, gasRatePerSec, maxEvapRateAndTime, totalGasEvapGforOutput};
+      // const maxEvapRateAndTime = {
+      //   evapRateGperSec: null,
+      //   timeSec: null,
+      // };
+      // const totalGasEvapGforOutput = {
+      //   10: null,
+      //   60: null,
+      //   3600: null
+      // };
+
+      const evapData = calculateEvaporationRate(
         calculationComponents,
+        298.15,
+        physProps,
+        parseFloat(spillAmountG),
         parseFloat(hoodVelocity),
         parseFloat(hoodLength),
         parseFloat(hoodDepth),
         parseFloat(molecularWeightManual),
         parseFloat(vaporPressureManual),
+        parseFloat(liquidDensityLbGalManual)
       );
 
+      const maxEvapData = evapData.maxEvapRateAndTime;
+      const totalGasEvapGforOutput = evapData.totalGasEvapGforOutput;
+      const nulls = evapData.nulls;
+
+
       setResults({
-        ratePerSecond: evaporationRate,
-        tenSeconds: evaporationRate * 10,
-        sixtySeconds: evaporationRate * 60,
-        oneHour: evaporationRate * 3600,
+        peakEvapRate: maxEvapData.evapRateGperSec,
+        timeToPeak: maxEvapData.timeSec,
+        tenSeconds: totalGasEvapGforOutput[10],
+        sixtySeconds: totalGasEvapGforOutput[60],
+        oneHour: totalGasEvapGforOutput[3600],
       });
       setError('');
-      setEvapRateGramSec(evaporationRate);
+      if (nulls.length > 0) {
+        let err = "Could not find the following properties.  Substituting their values for those of water: ";
+        nulls.forEach(prop_id => {
+            err += `${consts.LONG_FORM_PHYS_PROP_DESCRIPTIONS[prop_id]}, `;
+        });
+        // Remove the trailing comma and space
+        err = err.trim().replace(/,$/, '');
+        setError(err);
+      }
+      
+      setEvapRateGramSec(maxEvapData.evapRateGperSec);
     } catch (err) {
       setError('Error calculating evaporation rate: ' + err.message);
     }
@@ -290,7 +325,7 @@ const EvaporationCalculator = () => {
           </div>
         </div>
       )}
-
+      
       <div className="form-group">
         <label className="form-label">Hood Dimensions</label>
         <div className="dimension-inputs">
@@ -314,6 +349,19 @@ const EvaporationCalculator = () => {
               className="form-input"
             />
           </div>
+        </div>
+      </div>
+
+      <div className="form-group">
+        <div>
+          <label className="form-label">Spill Amount (g)</label>
+          <input
+            type="number"
+            value={spillAmountG}
+            onChange={(e) => setSpillAmountG(e.target.value)}
+            placeholder="Enter height"
+            className="form-input"
+          />
         </div>
       </div>
 
@@ -472,6 +520,17 @@ const EvaporationCalculator = () => {
                 className="form-input"
               />
             </div>
+
+            <div>
+              <label className="form-label">Liquid Density at 25°C (lb/gal)</label>
+              <input
+                type="number"
+                value={liquidDensityLbGalManual}
+                onChange={(e) => setLiquidDensityLbGalManual(e.target.value)}
+                className="form-input"
+              />
+            </div>
+
           </div>
         )}
       </div>
@@ -483,16 +542,26 @@ const EvaporationCalculator = () => {
         onClick={calculateResults} 
         disabled={  !hoodVelocity || !hoodLength || !hoodDepth || 
           (mixtureComponents.length === 0 && (!molecularWeightManual || !vaporPressureManual)) || 
-          (mixtureComponents.length === 0 && !manualEntry) }> 
+          (mixtureComponents.length === 0 && !manualEntry) || 
+          !spillAmountG }> 
 
         Calculate Evaporation Rate 
 
       </button>
 
+      {/* setResults({
+        peakEvapRate: maxEvapData.evapRateGperSec,
+        timeToPeak: maxEvapData.timeSec,
+        tenSeconds: totalGasEvapGforOutput[10],
+        sixtySeconds: totalGasEvapGforOutput[60],
+        oneHour: totalGasEvapGforOutput[3600],
+      }); */}
+
       {results && (
         <div className="results-container">
           <h3>Results:</h3>
-          <p>Evaporation Rate: {results.ratePerSecond.toFixed(6)} g/sec</p>
+          <p>Peak Evaporation Rate: {results.peakEvapRate.toFixed(6)} g/sec</p>
+          <p>Time to Peak: {results.timeToPeak} sec</p>
           <p>Amount evaporated in 10 seconds: {results.tenSeconds.toFixed(2)} g</p>
           <p>Amount evaporated in 60 seconds: {results.sixtySeconds.toFixed(2)} g</p>
           <p>Amount evaporated in 1 hour: {results.oneHour.toFixed(2)} g</p>
@@ -501,7 +570,7 @@ const EvaporationCalculator = () => {
 
       {results && (
         <div className="form-group">
-          <label className="form-label">Inputs for Concentration Calc</label>
+          <label className="form-label">Sash Dimensions</label>
           <div className="dimension-inputs">
             <div>
               <label className="form-label">Sash Height (ft)</label>
@@ -520,16 +589,6 @@ const EvaporationCalculator = () => {
                 value={sashWidth}
                 onChange={(e) => setSashWidth(e.target.value)}
                 placeholder="Enter width"
-                className="form-input"
-              />
-            </div>
-            <div>
-              <label className="form-label">Spill Amount (g)</label>
-              <input
-                type="number"
-                value={spillAmountG}
-                onChange={(e) => setSpillAmountG(e.target.value)}
-                placeholder="Enter height"
                 className="form-input"
               />
             </div>

@@ -18,16 +18,18 @@ export default class PhysProps {
     constructor() {
         this.dipprCoeffs = [];
         this.dipprConsts = [];
+        this.chemicalData = [];
         
         this.initializeData();
     }
 
     async initializeData() {
+        this.chemicalData = await this.#loadChemicalData();
         this.dipprCoeffs = await this.#loadDipprCoeffs();
         this.dipprConsts = await this.#loadDipprConsts();
     }
 
-    async loadChemicalData() {
+    async #loadChemicalData() {
         try {
             const response = await fetch(consts.CHEMINFO_CSV_NAME);
             const text = await response.text();
