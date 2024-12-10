@@ -161,16 +161,11 @@ export default class PhysProps {
         let { coeff_a, coeff_b, coeff_c, coeff_d, coeff_e, coeff_f, coeff_g, eqn_id, min_t, max_t } = selectedRow;
         const consts = [coeff_a, coeff_b, coeff_c, coeff_d, coeff_e, coeff_f, coeff_g];
 
-        console.log("chem: ", cas_no, " | prop id: ", property_id, "consts: ", consts, " | eqn_id: ", (eqn_id), " | function: ", eqnFunctions[eqn_id]);
-
-
         // Get the appropriate DIPPR equation function
         const dipprFunction = eqnFunctions[eqn_id];
         if (!dipprFunction) {
             return null;
         }
-
-        // console.log("chem: ", cas_no, " | prop id: ", property_id, "consts: ", consts, " | eqn_id: ", (eqn_id), " | function: ", eqnFunctions[eqn_id], "result: ", dipprFunction(consts, temperature, tc, integrated));
 
         // Call the function
         return dipprFunction(consts, temperature, tc, integrated);

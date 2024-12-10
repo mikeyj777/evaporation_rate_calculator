@@ -129,8 +129,8 @@ const EvaporationCalculator = () => {
     if (mixtureComponents.length === 0) return;
     const chem = mixtureComponents[0];
     const temp_k = 298.15;
-              //dynamicPoolEvap = (cas_no, temp_k, physProps, spillMassG)
-    const val = dynamicPoolEvap(chem.casNumber, temp_k, physProps, 100);
+              //dynamicPoolEvap = (cas_no, temp_k, physProps, spillMassG, hoodVelocityFtMin)
+    const val = dynamicPoolEvap(chem.casNumber, temp_k, physProps, 100, hoodVelocity);
 
     console.log(val);
 
