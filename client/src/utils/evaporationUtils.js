@@ -1,3 +1,5 @@
+import * as consts from './consts';
+
 //evaporationUtils.js
 
 // Constants
@@ -8,6 +10,34 @@ const R = 8314; // J/kmol/K
 const TEMP_K = 298.15; // K
 const PI = Math.PI;
 const LB_PER_KG = 2.20462;
+
+export const getAverageLiquidDensityKgM3 = (components, physProps, tempK = TEMP_K) => {
+  let totMass = 0;
+  let totVol = 0;
+  const badChems = [];
+  for (let i = 0; i < components.length; i++) {
+    const comp = components[i];
+    const mass = comp.amount * comp.molecularWeight;
+    const cas_no = comp.casNumber;
+    totMass += mass;
+    let liqDensKgM3 = 0;
+    let liqDensKmolM3 = 0;
+    try{
+      liqDensKmolM3 = physProps.filterAndCalculate(cas_no, "LDN", tempK);
+      liqDensKgM3 = liqDensKmolM3 * comp.molecularWeight;
+    } catch {
+      badChems.push(cas_no);
+      liqDensKmolM3 = physProps.filterAndCalculate(consts.CAS_NO_WATER, "LDN", tempK);
+      liqDensKgM3 = liqDensKmolM3 * consts.MW_H2O;
+    }
+    totVol += mass / liqDensKgM3;
+  }
+  let densKgM3 = 0;
+  if (totVol > 0) densKgM3 = totMass / totVol;
+
+  return {badChems, densKgM3};
+
+}
 
 export const convertToMolarBasis = (mixture) => {
   let totMol = 0;
@@ -93,6 +123,24 @@ export const calculateVaporPhaseAveMolecularWeight = (components) => {
 
 }
 
+export const getMixtureVaporPressurePa = (components, tempK = TEMP_K) => {
+
+  const mixtVp = components.reduce((totalPressure, comp) => {
+    const pureCompVaporPressure = calculateVaporPressure(
+      comp.vaporPressureConstants.A,
+      comp.vaporPressureConstants.B,
+      comp.vaporPressureConstants.C,
+      comp.vaporPressureConstants.D,
+      comp.vaporPressureConstants.E,
+      tempK
+    );
+    console.log("component: ", comp.name, " | pure component vapor pressure: ", pureCompVaporPressure, " Pa");
+    return totalPressure + (comp.amount * pureCompVaporPressure);
+  }, 0);
+
+  return mixtVp;
+}
+
 export const calculateConcentrationPpm = (sashHeightFt, sashWidthFt, hoodVelocityFtMin, evaporationRateGramSec, components, mwManual) => {
 
   // For mixtures, we need to:
@@ -152,20 +200,7 @@ export const calculateEvaporationRate = (components, hoodVelocity, hoodLength, h
   
   let mixtureVaporPressure = vpManual;
   // 2. Calculate mixture vapor pressure (Raoult's law)
-  if (!mixtureVaporPressure) {
-    mixtureVaporPressure = components.reduce((totalPressure, comp) => {
-      const pureCompVaporPressure = calculateVaporPressure(
-        comp.vaporPressureConstants.A,
-        comp.vaporPressureConstants.B,
-        comp.vaporPressureConstants.C,
-        comp.vaporPressureConstants.D,
-        comp.vaporPressureConstants.E,
-        TEMP_K
-      );
-      console.log("component: ", comp.name, " | pure component vapor pressure: ", pureCompVaporPressure, " Pa");
-      return totalPressure + (comp.amount * pureCompVaporPressure);
-    }, 0);
-  }
+  if (!mixtureVaporPressure) mixtureVaporPressure = getMixtureVaporPressurePa(components);
 
   console.log("overall vapor pressure: ", mixtureVaporPressure, " Pa");
   

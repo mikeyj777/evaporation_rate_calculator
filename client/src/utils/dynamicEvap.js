@@ -1,5 +1,5 @@
 import * as consts from './consts';
-
+import { getAverageMolecularWeight, getMixtureVaporPressurePa, getAverageLiquidDensityKgM3 } from './evaporationUtils';
 
 //         st = Double.parseDouble(chemForAnalysis[8]);
 // //Surface Tension (dyne/cm)
@@ -15,7 +15,7 @@ import * as consts from './consts';
 // //Viscosity (cP)
 
 
-const dynamicPoolEvap = (chems, temp_k, physProps, spillMassG, hoodVelocityFtMin, hoodLengthFt, hoodDepthFt, mwManual, vpManual, liquidDensityManualLbGal) => {
+const dynamicPoolEvap = (components, temp_k, physProps, spillMassG, hoodVelocityFtMin, hoodLengthFt, hoodDepthFt, mwManual, vpManual, liquidDensityManualLbGal) => {
 
     const nulls = []
 
@@ -33,14 +33,20 @@ const dynamicPoolEvap = (chems, temp_k, physProps, spillMassG, hoodVelocityFtMin
     let vpPa = vpManual;
     let liqDensLbGal = liquidDensityManualLbGal;
     
-
+    let liqDensKmolM3 = 0;
     //filterAndCalculate(cas_no, property_id, temperature, integrated=false)
-    if (!vpPa) vpPa = physProps.filterAndCalculate(cas_no, "VP", temp_k);
-    if (!mw) mw = physProps.getPropertyValue(cas_no, "MW");
+    if (!vpPa) vpPa = getMixtureVaporPressurePa(components, temp_k);
+    if (!mw) mw = getAverageMolecularWeight(components);
     if (!liqDensLbGal) {
         try {
-            const liqDensKmolM3 = physProps.filterAndCalculate(cas_no, "LDN", temp_k);
-            liqDensLbGal = liqDensKmolM3 * mw * consts.LB_PER_KG / consts.GAL_PER_M3;
+            // getAverageLiquidDensityKgM3 = (components, physProps, tempK = TEMP_K)
+            // return {badChems, densKgM3};
+            const dens_data = getAverageLiquidDensityKgM3(components, physProps, temp_k);
+            const liqDensKgM3 = dens_data.densKgM3;
+            const badChems = dens_data.badChems;
+            if (badChems.length > 0) nulls.push("LDN");
+            liqDensLbGal = liqDensKgM3 * consts.LB_PER_KG / consts.GAL_PER_M3;
+            
         } catch (error) {
             // error logging already in the phys props methods.
             console.error("error: ", error);
@@ -56,7 +62,7 @@ const dynamicPoolEvap = (chems, temp_k, physProps, spillMassG, hoodVelocityFtMin
         vpPa = physProps.filterAndCalculate(consts.CAS_NO_WATER, "VP", temp_k);
     }
     if (!liqDensLbGal) {
-        nulls.push("LDN");
+        if (!nulls.includes("LDN")) nulls.push("LDN");
         liqDensKmolM3 = physProps.filterAndCalculate(consts.CAS_NO_WATER, "LDN", temp_k);
         liqDensLbGal = liqDensKmolM3 * consts.MW_H2O * consts.LB_PER_KG / consts.GAL_PER_M3;
     }

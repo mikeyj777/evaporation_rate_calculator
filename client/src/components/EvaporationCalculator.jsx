@@ -57,20 +57,20 @@ const EvaporationCalculator = () => {
   const [componentAmount, setComponentAmount] = useState('');
   const [isMolarBasis, setIsMolarBasis] = useState(false);
   const [mixtureComponents, setMixtureComponents] = useState([]);
-  const [sashHeight, setSashHeight] = useState(null);
-  const [sashWidth, setSashWidth] = useState(null);
-  const [evapRateGramSec, setEvapRateGramSec] = useState(null);
-  const [concPpm, setConcPpm] = useState(null);
-  const [spillAmountG, setSpillAmountG] = useState(null);
-  const [liquidDensityLbGalManual, setLiquidDensityLbGalManual] = useState(null);
+  const [sashHeight, setSashHeight] = useState('');
+  const [sashWidth, setSashWidth] = useState('');
+  const [evapRateGramSec, setEvapRateGramSec] = useState('');
+  const [concPpm, setConcPpm] = useState('');
+  const [spillAmountG, setSpillAmountG] = useState('');
+  const [liquidDensityLbGalManual, setLiquidDensityLbGalManual] = useState('');
   
   // Calculation state
   const [calculationComponents, setCalculationComponents] = useState([]);
   
   // Supporting state
   const [filteredChemicals, setFilteredChemicals] = useState([]);
-  const [selectedChemical, setSelectedChemical] = useState(null);
-  const [results, setResults] = useState(null);
+  const [selectedChemical, setSelectedChemical] = useState('');
+  const [results, setResults] = useState('');
   const [error, setError] = useState('');
   const [chemicalData, setChemicalData] = useState([]);
   const [physProps, setPhysProps] = useState(null);
@@ -118,12 +118,12 @@ const EvaporationCalculator = () => {
   }, [chemicalInput, chemicalData]);
 
   useEffect(() => {
-    setResults(null);
-    setSashHeight(null);
-    setSashWidth(null);
-    setConcPpm(null);
-    setSpillAmountG(null);
-    setLiquidDensityLbGalManual(null);
+    setResults('');
+    setSashHeight('');
+    setSashWidth('');
+    setConcPpm('');
+    setSpillAmountG('');
+    setLiquidDensityLbGalManual('');
   }, [mixtureComponents])
 
   // ----------------- tester -----------------------
@@ -146,6 +146,7 @@ const EvaporationCalculator = () => {
     setCalculationComponents([]);
     setMolecularWeightManual('');
     setVaporPressureManual('');
+    setLiquidDensityLbGalManual('');
     setResults(null);
     setConcPpm(null);
   }, [manualEntry])
