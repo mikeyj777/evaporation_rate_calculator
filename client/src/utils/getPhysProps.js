@@ -33,7 +33,7 @@ export default class PhysProps {
         try {
             const response = await fetch(consts.CHEMINFO_CSV_NAME);
             const text = await response.text();
-    
+            
             // Parse CSV properly handling commas in fields
             const rows = text.split('\n').map(row => {
                 const cells = [];

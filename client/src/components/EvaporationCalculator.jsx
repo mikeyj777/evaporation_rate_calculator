@@ -103,7 +103,7 @@ const EvaporationCalculator = () => {
     if (physProps && physProps.chemicalData.length > 0) {
       setChemicalData(physProps.chemicalData);
     }
-  }, [physProps])
+  })
 
   useEffect(() => {
     if (chemicalInput.length > 0) {
