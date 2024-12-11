@@ -125,7 +125,17 @@ const EvaporationCalculator = () => {
     setConcPpm('');
     setEvapRateGramSec('');
     setLiquidDensityLbGalManual('');
+    setVaporPressureManual('');
+    setMolecularWeightManual('');
   }, [mixtureComponents])
+
+  useEffect(() => {
+      setResults('');
+      setSashHeight('');
+      setSashWidth('');
+      setConcPpm('');
+      setEvapRateGramSec('');
+  }, [hoodDepth, hoodLength, spillAmountML, hoodVelocity])
 
   // ----------------- tester -----------------------
 
@@ -575,7 +585,7 @@ const EvaporationCalculator = () => {
         oneHour: totalGasEvapGforOutput[3600],
       }); */}
 
-      {results && (
+      {results && hoodDepth && hoodLength && spillAmountML && hoodVelocity && (
         <div className="results-container">
           <h3>Results:</h3>
           <p>Peak Evaporation Rate: {results.peakEvapRate.toFixed(6)} g/sec</p>
@@ -588,7 +598,7 @@ const EvaporationCalculator = () => {
         </div>
       )}
 
-      {results && (
+      {results && hoodDepth && hoodLength && spillAmountML && hoodVelocity && (
         <div className="form-group">
           <label className="form-label">Sash Dimensions</label>
           <div className="dimension-inputs">
