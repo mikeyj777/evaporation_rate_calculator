@@ -146,7 +146,7 @@ export const calculateConcentrationPpm = (sashHeightFt, sashWidthFt, hoodVelocit
   console.log("average molecular wt in vapor phase: ", mixtureMW);
   
   const volRateFt3Min = sashHeightFt * sashWidthFt * hoodVelocityFtMin;
-  if (volRateFt3Min == 0) {
+  if (volRateFt3Min === 0) {
     return 0;
   }
   const volRateFt3Sec = volRateFt3Min / 60;
@@ -155,7 +155,7 @@ export const calculateConcentrationPpm = (sashHeightFt, sashWidthFt, hoodVelocit
   console.log("Molar Specific Volume for ideal gas = 391.897 ft3/lb-mol at 25 deg C")
   const molarVolumeIG = 391.8973045; // ft3/lb-mol
   const molarFlowAirLbMolSec = volRateFt3Sec / molarVolumeIG;
-  if (molarFlowAirLbMolSec == 0) {
+  if (molarFlowAirLbMolSec === 0) {
     return 0;
   }
   console.log("Molar flow air = Vol Rate of Air (", volRateFt3Min, " ft3/min) / 60 / molar Volume (", molarVolumeIG, " ft3/lb-mol) = ", molarFlowAirLbMolSec, " lb-mol/sec");
