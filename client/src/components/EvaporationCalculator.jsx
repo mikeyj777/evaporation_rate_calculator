@@ -466,6 +466,7 @@ const EvaporationCalculator = () => {
             >
               Add Chemical
             </button>
+            <span className="note-text">NOTE: Click "Add Chemical" after entering data for each chemical.</span>
           </div>
         </div>
 
@@ -642,7 +643,7 @@ const EvaporationCalculator = () => {
       {concPpm && (
         <div className="results-container">
           <h3>Results:</h3>
-          <p>Concentration: {concPpm.toFixed(6)} ppm</p>
+          <p>Estimated Concentration in Hood Exhaust: {concPpm.toFixed(6)} ppm</p>
         </div>
       )}
 

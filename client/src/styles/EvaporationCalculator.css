@@ -153,6 +153,18 @@
   margin-top: var(--spacing-unit);
 }
 
+/* .component-input-row {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing-unit) * 0.5);
+} */
+
+.note-text {
+  margin-left: calc(var(--spacing-unit) * 0.5);
+  font-size: 0.875rem;
+  color: var(--text-color);
+}
+
 .amount-input {
   width: 100px;
   padding: calc(var(--spacing-unit) * 0.25);
